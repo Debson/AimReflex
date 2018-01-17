@@ -1,3 +1,4 @@
+#include <SDL_ttf.h>
 
 class MDTexture
 {
@@ -11,9 +12,16 @@ public:
 
 	bool loadFromFile(std::string path);
 
+#ifdef _SDL_TTF_H
+	bool loadFromRenderedText(std::string textureText, SDL_Color textColor);
+	void setFont(TTF_Font *font);
+#endif
 	void free();
 
-	void render(int x, int y, float scale, SDL_Renderer *renderer);
+	void render(int x, int y, float scale);
+
+	void setRenderer(SDL_Renderer *renderer);
+	SDL_Texture *getTexture();
 
 	int getWidth();
 	int getHeight();
@@ -21,6 +29,7 @@ public:
 private:
 	SDL_Texture *mTexture;
 	SDL_Renderer *mRenderer;
+	TTF_Font *mFont;
 
 	int mWidth;
 	int mHeight;

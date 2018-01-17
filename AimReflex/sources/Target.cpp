@@ -9,7 +9,8 @@ Target::Target()
 	tPosX = (float)((rand() % (GAME_WIDTH - MAX_TARGET_WIDTH * 2)) + MAX_TARGET_WIDTH);
 	tPosY = (float)((rand() % (GAME_HEIGHT - MAX_TARGET_HEIGHT * 2)) + MAX_TARGET_HEIGHT);
 	scale = 0.f;
-
+	tAlpha = 255;
+	startCircleBlend = false;
 	reverse = false;
 	//lil
 	targetMiss = false;
@@ -25,6 +26,7 @@ Target::~Target()
 
 void Target::render(MDTexture *texture, SDL_Renderer &renderer)
 {
+	tRenderer = &renderer;
 	if (scale > MAX_TARGET_SCALE)
 	{
 		reverse = true;
@@ -37,11 +39,11 @@ void Target::render(MDTexture *texture, SDL_Renderer &renderer)
 
 	if (reverse)
 	{
-		scale -= 0.000002f;
+		scale -= 0.000010f + scale * 0.0005f;;
 	}
 	else
 	{
-		scale += 0.000004f;
+		scale += 0.000012f + scale * 0.0009f;
 	}
 	float diff = texture->getHeight() * scale * 0.5f;
 
@@ -53,11 +55,19 @@ void Target::render(MDTexture *texture, SDL_Renderer &renderer)
 	float tempY = tPosY;
 	tempX -= diff;
 	tempY -= diff;
+	if (startCircleBlend)
+	{
+		circle.draw(tRenderer, oldPosX, oldPosY, oldWidth / 2, &tAlpha);
+		if (tAlpha < 0)
+		{
+			startCircleBlend = false;
+		}
+	}
 
-	texture->render((int)tempX, (int)tempY, scale, &renderer);
-	SDL_Rect outline = { (int)tempX, (int)tempY, (int)tWidth, (int)tHeight };
+	texture->render((int)tempX, (int)tempY, scale);
+	/*SDL_Rect outline = { (int)tempX, (int)tempY, (int)tWidth, (int)tHeight };
 	SDL_SetRenderDrawColor(&renderer, 0x00, 0xFF, 0x00, 0xFF);
-	SDL_RenderDrawRect(&renderer, &outline);
+	SDL_RenderDrawRect(&renderer, &outline);*/
 }
 
 void Target::handleInput(SDL_Event *e)
@@ -99,6 +109,7 @@ void Target::handleInput(SDL_Event *e)
 			if (e->type == SDL_MOUSEBUTTONDOWN)
 			{
 				tHit = true;
+				startCircleBlend = true;
 				reset();
 			}
 		}
@@ -107,6 +118,12 @@ void Target::handleInput(SDL_Event *e)
 
 void Target::reset()
 {
+	tAlpha = 255;
+	oldPosX = tPosX;
+	oldPosY = tPosY;
+	oldWidth = tWidth;
+	oldHeight = tHeight;
+
 	tPosX = (float)((rand() % (GAME_WIDTH - 150)) + 75);
 	tPosY = (float)((rand() % (GAME_HEIGHT - 150)) + 75);
 	scale = 0.f;
@@ -123,4 +140,15 @@ float Target::getPosY()
 {
 	return tPosY;
 }
+
+float Target::getWidth()
+{
+	return tWidth;
+}
+
+float Target::getHeight()
+{
+	return tHeight;
+}
+
 

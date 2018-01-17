@@ -19,19 +19,31 @@ public:
 	void hit();
 	void miss();
 	void targetMiss();
+	void setMaxCombo(int combo);
+
+	int getHits();
+	int getMisses();
+	int getMissedTargets();
+	int getMaxCombo();
+	int getTotalTargets();
+	int getAiming();
 
 	bool pHit;
 	bool pMiss;
 
-private:
+	int combo;
 
-	bool levelEnabled[LEVEL_COUNT];
-	bool callMissOnce;
+private:
 
 	int pTargetCount;
 	int pScore;
 	int pHits;
 	int pMisses;
-	int pMissesTargets;
+	int pMissedTargets;
 	int pMaxCombo;
+	int pTotalTargets;
+	int pAiming;
+
+	bool levelEnabled[LEVEL_COUNT];
+
 };

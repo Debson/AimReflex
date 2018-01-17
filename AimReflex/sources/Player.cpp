@@ -12,8 +12,12 @@ Player::Player()
 	pScore = 0;
 	pHits = 0;
 	pMisses = 0;
-	pMissesTargets = 0;
+	pMissedTargets = 0;
 	pMaxCombo = 0;
+	pTotalTargets = START_TARGET_COUNT;
+	pAiming = 0;
+
+	combo = 0;
 
 	for (int i = 0; i < LEVEL_COUNT; ++i)
 	{//Disable all levels on start
@@ -57,15 +61,62 @@ void Player::checkScore()
 void Player::hit()
 {
 	pScore += HIT;
+	pHits++;
+	combo++;
+	if (combo > pMaxCombo)
+	{
+		pMaxCombo = combo;
+	}
+	pTotalTargets++;
 }
 
 void Player::miss()
 {
 	pScore -= MISS;
+	pMisses++;
+	combo = 0;
+	pTotalTargets++;
 }
 
 void Player::targetMiss()
 {
 	pScore -= TARGET_MISS;
-	printf("%d\n", pScore);
+	pMissedTargets++;
+	combo = 0;
+	pTotalTargets++;
+}
+
+void Player::setMaxCombo(int combo)
+{
+	pMaxCombo = combo;
+}
+
+int Player::getHits()
+{
+	return pHits;
+}
+
+int Player::getMisses()
+{
+	return pMisses;
+}
+
+int Player::getMissedTargets()
+{
+	return pMissedTargets;
+}
+
+int Player::getMaxCombo()
+{
+	return pMaxCombo;
+}
+
+int Player::getTotalTargets()
+{
+	return pTotalTargets;
+}
+
+int Player::getAiming()
+{
+	return pAiming;
 }

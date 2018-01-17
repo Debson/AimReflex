@@ -7,8 +7,9 @@
 
 MDTexture::MDTexture()
 {
-	mTexture = NULL;
 	mRenderer = NULL;
+	mFont = NULL;
+	mTexture = NULL;
 
 	mWidth = 0;
 	mHeight = 0;
@@ -60,6 +61,48 @@ bool MDTexture::loadFromFile(std::string path)
 	return mTexture != NULL;
 }
 
+#ifdef _SDL_TTF_H
+bool MDTexture::loadFromRenderedText(std::string textureText, SDL_Color textColor)
+{
+	free();
+
+	SDL_Surface *textSurface = TTF_RenderText_Solid(mFont, textureText.c_str(), textColor);
+	if (textSurface == NULL)
+	{
+		printf("text error text error text error text error\n");
+	}
+	else
+	{
+		if (mRenderer == NULL)
+		{
+			printf("lol");
+			getchar();
+		}
+		mTexture = SDL_CreateTextureFromSurface(mRenderer, textSurface);
+		if (mTexture == NULL)
+		{
+			printf("text surface error text surface error text surface error \n");
+			getchar();
+		}
+		else
+		{
+			mWidth = textSurface->w;
+			mHeight = textSurface->h;
+		}
+
+		SDL_FreeSurface(textSurface);
+	}
+
+	return mTexture != NULL;
+}
+
+void MDTexture::setFont(TTF_Font *font)
+{
+	mFont = font;
+}
+
+#endif
+
 void MDTexture::free()
 {
 	if (mTexture != NULL)
@@ -71,14 +114,24 @@ void MDTexture::free()
 	}
 }
 
-void MDTexture::render(int x, int y, float scale, SDL_Renderer *renderer)
+void MDTexture::render(int x, int y, float scale)
 {
-	mRenderer = renderer;
 	SDL_Rect renderQuad = { x, y, mWidth, mHeight };
 	renderQuad.w *= scale;
 	renderQuad.h *= scale;
 
-	SDL_RenderCopy(renderer, mTexture, NULL, &renderQuad);
+	SDL_RenderCopy(mRenderer, mTexture, NULL, &renderQuad);
+}
+
+
+void MDTexture::setRenderer(SDL_Renderer *renderer)
+{
+	mRenderer = renderer;
+}
+
+SDL_Texture *MDTexture::getTexture()
+{
+	return mTexture;
 }
 
 int MDTexture::getWidth()
