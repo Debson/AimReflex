@@ -1,7 +1,7 @@
 #define _USE_MATH_DEFINES
 
 #include <iostream>
-#include "../AimReflex/headers/Circle.h"
+#include "Circle.h"
 
 Circle::Circle()
 {
@@ -28,8 +28,8 @@ void Circle::draw(SDL_Renderer *renderer, float centerX, float centerY, float ra
 
 		if ((x != xPos) || (y != yPos))
 		{
+			SDL_SetRenderDrawColor(renderer, 0, 255, 0, *alpha);
 			SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-			SDL_SetRenderDrawColor(renderer, 255, 140, 0, *alpha);
 
 			SDL_RenderDrawLine(renderer, centerX + x, centerY - y, centerX + xPos, centerY - yPos);
 			SDL_RenderDrawLine(renderer, centerX - x, centerY - y, centerX - xPos, centerY - yPos);

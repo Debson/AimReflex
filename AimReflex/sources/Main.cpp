@@ -1,16 +1,14 @@
 #include <iostream>
-#include <stdio.h>
-#include <time.h>
 #include <cmath>
 #include <vector>
 #include <sstream>
+#include <iomanip>
 
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
-#include "../Circle.h"
-#include "../headers/Target.h"
+#include "../headers/Timer.h"
 #include "../headers/Player.h"
 
 SDL_Window *dWindow;
@@ -19,7 +17,7 @@ SDL_Renderer *dRenderer;
 
 TTF_Font *gFont = NULL;
 
-MDTexture dDotTexture;
+MDTexture dTargetTexture;
 MDTexture dScoreText[2];
 MDTexture dHitsText[2];
 MDTexture dMissesText[2];
@@ -31,8 +29,11 @@ MDTexture dTotalHitsText;
 MDTexture dTotalMissesText;
 MDTexture dTotalMissedTargetsText;
 
+MDTexture dXTexture;
 
-Target target[GAME_TARGETS_COUNT];
+std::vector<Target> target;
+
+//Target target[GAME_TARGETS_COUNT];
 Circle circle;
 Player player;
 
@@ -42,14 +43,14 @@ bool loadMedia();
 
 void close();
 
-void renderText(std::string text, Uint8 size, SDL_Color textColor, std::string style, MDTexture *texture);
+void renderText(std::string text, Uint8 size, SDL_Color textColor, MDTexture *texture);
 
-void checkHit(Target *target)
+bool checkHit(std::vector<Target> target)
 {
 	int hit = 0;
 	int miss = 0;
 
-	for (int i = 0; i < player.getTargetCount(); ++i)
+	for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
 	{
 		if (target[i].tHit)
 		{
@@ -69,9 +70,7 @@ void checkHit(Target *target)
 	{
 		player.miss();
 	}
-
-	player.checkScore();
-	printf("%d\n", player.getScore());
+	return hit > 0;
 }
 
 bool init()
@@ -101,7 +100,7 @@ bool init()
 			}
 			else
 			{
-				dRenderer = SDL_CreateRenderer(dWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_ACCELERATED);
+				dRenderer = SDL_CreateRenderer(dWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 				if (dRenderer == NULL)
 				{
 					// could not create a renderer
@@ -111,7 +110,7 @@ bool init()
 				{
 
 					SDL_SetRenderDrawColor(dRenderer, BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, BACKGROUND_COLOR.r);
-					dDotTexture.setRenderer(dRenderer);
+					dTargetTexture.setRenderer(dRenderer);
 
 					int imgFlags = IMG_INIT_PNG;
 					if (!(IMG_Init(imgFlags) & imgFlags))
@@ -125,7 +124,6 @@ bool init()
 						printf("TTF not working fuck");
 						success = false;
 					}
-
 				}
 			}
 		}
@@ -137,65 +135,75 @@ bool init()
 bool loadMedia()
 {
 	bool success = true;
-	if (!dDotTexture.init(dRenderer))
+	if (!dTargetTexture.init(dRenderer))
 	{
-		printf("problem with loading renderer to class property");
+		printf("problem with loading renderer to MDTexture class");
 		success = false;
 	}
 	else
 	{
-		if (!dDotTexture.loadFromFile("resources/ball.png"))
+		if (!dTargetTexture.loadFromFile("resources/ball.png"))
 		{
-			// could not loade dot.png
+			printf("Could not load target's texture\n");
 			success = false;
 		}
 	}
+
+	dXTexture.init(dRenderer);
+	if (!dXTexture.loadFromFile("resources/x.png"))
+	{
+		printf("Could not load X texture\n");
+	}
+
+
+
+	// Size of different texts
 	Uint8 scoreSize = 48;
 	Uint8 scoreNumberSize = 36;
 	Uint8 textSize = 16;
 	Uint8 numbersSize = 22;
 	Uint8 otherNumbersSize = 15;
 
-
 	SDL_Color textColor = { 102, 194, 255 };
-	renderText("Score", scoreSize, textColor, "regular", &dScoreText[0]);
 
-	renderText("Hits", textSize, textColor,"regular", &dHitsText[0]);
+	//Set text, size and color
+	renderText("Score", scoreSize, textColor, &dScoreText[0]);
 
-	renderText("Misses", textSize, textColor, "regular", &dMissesText[0]);
+	renderText("Hits", textSize, textColor, &dHitsText[0]);
 
-	renderText("Missed targets", textSize, textColor, "regular", &dMissedTargetsText[0]);
+	renderText("Misses", textSize, textColor, &dMissesText[0]);
 
-	renderText("MAX combo", textSize, textColor, "regular", &dMaxComboText[0]);
+	renderText("Missed targets", textSize, textColor, &dMissedTargetsText[0]);
 
-	renderText("Total targets", textSize, textColor, "regular", &dTotalTargetsText[0]);
+	renderText("MAX combo", textSize, textColor, &dMaxComboText[0]);
 
-	renderText("Aiming", textSize, textColor, "regular", &dAimingText[0]);
+	renderText("Total targets", textSize, textColor, &dTotalTargetsText[0]);
+
+	renderText("Aiming", textSize, textColor, &dAimingText[0]);
 
 
 
-	renderText("0", scoreNumberSize, textColor, "bold", &dScoreText[1]);
+	renderText("0", scoreNumberSize, textColor, &dScoreText[1]);
 
-	renderText("0", numbersSize, textColor, "bold", &dHitsText[1]);
+	renderText("0", numbersSize, textColor, &dHitsText[1]);
 
-	renderText("0", numbersSize, textColor, "bold", &dMissesText[1]);
+	renderText("0", numbersSize, textColor, &dMissesText[1]);
 
-	renderText("0", numbersSize, textColor, "bold", &dMissedTargetsText[1]);
+	renderText("0", numbersSize, textColor, &dMissedTargetsText[1]);
 
-	renderText("0", numbersSize, textColor, "bold", &dMaxComboText[1]);
+	renderText("0", numbersSize, textColor, &dMaxComboText[1]);
 
-	renderText("0", numbersSize, textColor, "bold", &dTotalTargetsText[1]);
+	renderText("0", numbersSize, textColor, &dTotalTargetsText[1]);
 
-	renderText("0", numbersSize, textColor, "bold", &dAimingText[1]);
+	renderText("0", numbersSize, textColor, &dAimingText[1]);
 
-	renderText("0", numbersSize, textColor, "bold", &dTotalHitsText);
+	renderText("0", numbersSize, textColor, &dTotalHitsText);
 
-	renderText("0", otherNumbersSize, textColor, "regular", &dTotalHitsText);
+	renderText("0", otherNumbersSize, textColor, &dTotalHitsText);
 
-	renderText("0", otherNumbersSize, textColor, "regular", &dTotalMissesText);
+	renderText("0", otherNumbersSize, textColor, &dTotalMissesText);
 
-	renderText("0", otherNumbersSize, textColor, "regular", &dTotalMissedTargetsText);
-
+	renderText("0", otherNumbersSize, textColor, &dTotalMissedTargetsText);
 
 
 	return success;
@@ -203,8 +211,26 @@ bool loadMedia()
 
 void close()
 {
-	dDotTexture.free();
-	//dScoreText.free();
+	dTargetTexture.free();
+
+	dTargetTexture.free();
+	dScoreText[0].free();
+	dScoreText[1].free();
+	dHitsText[0].free();
+	dHitsText[1].free();
+	dMissesText[0].free();
+	dMissesText[1].free();
+	dMissedTargetsText[0].free();
+	dMissedTargetsText[1].free();
+	dMaxComboText[0].free();
+	dMaxComboText[1].free();
+	dTotalTargetsText[0].free();
+	dTotalTargetsText[1].free();
+	dAimingText[0].free();
+	dAimingText[1].free();
+	dTotalHitsText.free();
+	dTotalMissesText.free();
+	dTotalMissedTargetsText.free();
 
 	TTF_CloseFont(gFont);
 	gFont = NULL;
@@ -219,32 +245,28 @@ void close()
 	SDL_Quit();
 }
 
-void renderText(std::string text, Uint8 size, SDL_Color textColor, std::string style, MDTexture *texture)
+void renderText(std::string text, Uint8 size, SDL_Color textColor, MDTexture *texture)
 {
-	if (style == "regular")
-	{
-		gFont = TTF_OpenFont("resources/ProggySmall.ttf", size);
-	}
-	else if (style == "bold")
-	{
-		gFont = TTF_OpenFont("resources/ProggySmall.ttf", size);
-	}
-	//SDL_Color textColor = { 255, 255, 255 };
+	gFont = TTF_OpenFont("resources/ProggySmall.ttf", size);
+
 	texture->setFont(gFont);
 	texture->setRenderer(dRenderer);
 	if (!texture->loadFromRenderedText(text, textColor))
 	{
-		printf("cant load fucking texture xd");
+		printf("Unable to road texture\n");
 	}
 }
 
 void renderLeftPanel()
 {
-	SDL_Color lineColor = { 204, 204, 204 };
+	SDL_Color underlineColor = { 204, 204, 204 };
 	SDL_Color textColor = { 102, 194, 255 };
 
+	// Set back render draw blend mode to NONE to prevent from blending textures below (I think so)
+	SDL_SetRenderDrawBlendMode(dRenderer, SDL_BLENDMODE_NONE);
+
 	// Left Panel
-	SDL_Rect leftPanel = { SCREEN_WIDTH, 0, GAME_WIDTH - SCREEN_WIDTH, GAME_HEIGHT };
+	SDL_Rect leftPanel = { GAME_WIDTH, 0, SCREEN_WIDTH - GAME_WIDTH, GAME_HEIGHT };
 	SDL_SetRenderDrawColor(dRenderer, 45, 89, 134, 255);
 	SDL_RenderFillRect(dRenderer, &leftPanel);
 
@@ -255,52 +277,55 @@ void renderLeftPanel()
 
 	// Total game score
 	dScoreText[0].render(GAME_WIDTH + 10, 20, 1);
-	SDL_SetRenderDrawColor(dRenderer, lineColor.r, lineColor.g, lineColor.b, 255);
+	SDL_SetRenderDrawColor(dRenderer, underlineColor.r, underlineColor.g, underlineColor.b, 255);
 	SDL_Rect scoreUnderline = { GAME_WIDTH + 10 , 20 + dScoreText[0].getHeight(), 242, 5 };
 	SDL_RenderFillRect(dRenderer, &scoreUnderline);
 
 	// Total hits through game time
 	dHitsText[0].render(GAME_WIDTH + 10, 85, 1);
-	SDL_SetRenderDrawColor(dRenderer, lineColor.r, lineColor.g, lineColor.b, 255);
+	SDL_SetRenderDrawColor(dRenderer, underlineColor.r, underlineColor.g, underlineColor.b, 255);
 	SDL_RenderDrawLine(dRenderer, GAME_WIDTH + 10, 85 + dHitsText[0].getHeight(), GAME_WIDTH + 180, 85 + dHitsText[0].getHeight());
 
 	// Total misses through game time
 	dMissesText[0].render(GAME_WIDTH + 10, 110, 1);
-	SDL_SetRenderDrawColor(dRenderer, lineColor.r, lineColor.g, lineColor.b, 255);
+	SDL_SetRenderDrawColor(dRenderer, underlineColor.r, underlineColor.g, underlineColor.b, 255);
 	SDL_RenderDrawLine(dRenderer, GAME_WIDTH + 10, 110 + dHitsText[0].getHeight(), GAME_WIDTH + 180, 110 + dHitsText[0].getHeight());
 
 	// Targets that have expired
 	dMissedTargetsText[0].render(GAME_WIDTH + 10, 135, 1);
-	SDL_SetRenderDrawColor(dRenderer, lineColor.r, lineColor.g, lineColor.b, 255);
+	SDL_SetRenderDrawColor(dRenderer, underlineColor.r, underlineColor.g, underlineColor.b, 255);
 	SDL_RenderDrawLine(dRenderer, GAME_WIDTH + 10, 135 + dHitsText[0].getHeight(), GAME_WIDTH + 180, 135 + dHitsText[0].getHeight());
 
 	// Max combo (how many targets were hit in a row)
 	dMaxComboText[0].render(GAME_WIDTH + 10, 165, 1);
-	SDL_SetRenderDrawColor(dRenderer, lineColor.r, lineColor.g, lineColor.b, 255);
+	SDL_SetRenderDrawColor(dRenderer, underlineColor.r, underlineColor.g, underlineColor.b, 255);
 	SDL_RenderDrawLine(dRenderer, GAME_WIDTH + 10, 165 + dHitsText[0].getHeight(), GAME_WIDTH + 180, 165 + dHitsText[0].getHeight());
 
 	// Total targets that appeared on game window
 	dTotalTargetsText[0].render(GAME_WIDTH + 10, 190, 1);
-	SDL_SetRenderDrawColor(dRenderer, lineColor.r, lineColor.g, lineColor.b, 255);
+	SDL_SetRenderDrawColor(dRenderer, underlineColor.r, underlineColor.g, underlineColor.b, 255);
 	SDL_RenderDrawLine(dRenderer, GAME_WIDTH + 10, 190 + dHitsText[0].getHeight(), GAME_WIDTH + 180, 190 + dHitsText[0].getHeight());
 
 	// Aiming
 	dAimingText[0].render(GAME_WIDTH + 10, 215, 1);
-	SDL_SetRenderDrawColor(dRenderer, lineColor.r, lineColor.g, lineColor.b, 255);
+	SDL_SetRenderDrawColor(dRenderer, underlineColor.r, underlineColor.g, underlineColor.b, 255);
 	SDL_RenderDrawLine(dRenderer, GAME_WIDTH + 10, 215 + dHitsText[0].getHeight(), GAME_WIDTH + 180, 215 + dHitsText[0].getHeight());
 
-	// Calculated points
+	// Calculated points close to left bound
+
+	// Points for hits
 	dTotalHitsText.render(GAME_WIDTH + 250 - dTotalHitsText.getWidth(), 85, 1);
-	SDL_SetRenderDrawColor(dRenderer, lineColor.r, lineColor.g, lineColor.b, 255);
+	SDL_SetRenderDrawColor(dRenderer, underlineColor.r, underlineColor.g, underlineColor.b, 255);
 	SDL_RenderDrawLine(dRenderer, GAME_WIDTH + 200, 85 + dHitsText[0].getHeight(), GAME_WIDTH + 250, 85 + dHitsText[0].getHeight());
 
+	// Points for misses
 	dTotalMissesText.render(GAME_WIDTH + 250 - dTotalMissesText.getWidth(), 110, 1);
-	SDL_SetRenderDrawColor(dRenderer, lineColor.r, lineColor.g, lineColor.b, 255);
+	SDL_SetRenderDrawColor(dRenderer, underlineColor.r, underlineColor.g, underlineColor.b, 255);
 	SDL_RenderDrawLine(dRenderer, GAME_WIDTH + 200, 110 + dHitsText[0].getHeight(), GAME_WIDTH + 250, 110 + dHitsText[0].getHeight());
 
-
+	// Points for missed targets
 	dTotalMissedTargetsText.render(GAME_WIDTH + 250 - dTotalMissedTargetsText.getWidth(), 135, 1);
-	SDL_SetRenderDrawColor(dRenderer, lineColor.r, lineColor.g, lineColor.b, 255);
+	SDL_SetRenderDrawColor(dRenderer, underlineColor.r, underlineColor.g, underlineColor.b, 255);
 	SDL_RenderDrawLine(dRenderer, GAME_WIDTH + 200, 135 + dHitsText[0].getHeight(), GAME_WIDTH + 250, 135 + dHitsText[0].getHeight());
 
 
@@ -312,8 +337,9 @@ void renderLeftPanel()
 	dTotalTargetsText[1].render(GAME_WIDTH + 180 - dTotalTargetsText[1].getWidth(), 187, 1);
 	dAimingText[1].render(GAME_WIDTH + 180 - dAimingText[1].getWidth(), 212, 1);
 	
+	// *********************************************************************************
+	//Render all numbers
 	std::stringstream newText;
-	
 	newText << player.getScore();
 	dScoreText[1].loadFromRenderedText(newText.str().c_str(), textColor);
 	
@@ -338,7 +364,26 @@ void renderLeftPanel()
 	newText << player.getTotalTargets();
 	dTotalTargetsText[1].loadFromRenderedText(newText.str().c_str(), textColor);
 
+	// Aiming
+	SDL_Color aimingColor;
+	if (player.getAiming() < 0.55f && player.getAiming() != 0)
+	{
+		aimingColor = { 255, 153, 51 };
+
+		if (player.getAiming() < 0.4f)
+		{
+			aimingColor = { 255, 51, 0 };
+		}
+	}
+	else
+	{
+		aimingColor = textColor;
+	}
 	newText.str(std::string());
+	newText << std::setprecision(3) << player.getAiming() << " sec";
+	dAimingText[1].loadFromRenderedText(newText.str().c_str(), aimingColor);
+	newText.str(std::string());
+
 	if (player.getHits() > 0)
 	{
 		newText << "+";
@@ -353,9 +398,7 @@ void renderLeftPanel()
 	newText.str(std::string());
 	newText << player.getMissedTargets() * TARGET_MISS * -1;
 	dTotalMissedTargetsText.loadFromRenderedText(newText.str().c_str(), textColor);
-
-
-
+	// *********************************************************************************
 }
 
 int main(int argc, char* args[])
@@ -372,8 +415,11 @@ int main(int argc, char* args[])
 		}
 		else
 		{
+			Target newTargets[2];
+			target.push_back(newTargets[0]);
+			target.push_back(newTargets[1]);
+
 			SDL_Event e;
-			int alpha = 255;
 			bool quit = false;
 			bool callOnce = false;
 
@@ -386,49 +432,54 @@ int main(int argc, char* args[])
 						quit = true;
 					}
 
-					for (int i = 0; i < player.getTargetCount(); ++i)
+					bool targetWasHit = true;
+					for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
 					{
 						target[i].handleInput(&e);
+						if (target[i].tHit && targetWasHit)
+						{
+							//printf("%d\n", i);
+							if (checkHit(target))
+							{
+								player.checkTargetLifeTime(target);
+								target[i].reset(target, i);
+								targetWasHit = false;
+							}
+						}
 					}
-					if (e.type == SDL_MOUSEBUTTONDOWN)
+					if (e.type == SDL_MOUSEBUTTONDOWN && targetWasHit)
 					{
-						checkHit(target);
+						if (checkHit(target))
+						{
+
+						}
+						
+						// Methods that can be called only once and when mouse button pressed
+						player.checkScore(&target);
+						// Check for target life time when button pressed(if hit)
 					}
 				}
 
 				SDL_SetRenderDrawColor(dRenderer, BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, BACKGROUND_COLOR.r);
 				SDL_RenderClear(dRenderer);
 
-				for (int i = 0; i < player.getTargetCount(); ++i)
+				for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
 				{
-					for (int j = 0; j < player.getTargetCount(); ++j)
-					{
-						if (i == j)
-						{
-
-						}
-						else
-						{
-							if ((abs(target[i].getPosY() - target[j].getPosY()) < 25.f) &&
-								(abs(target[i].getPosX() - target[j].getPosX()) < 25.f))
-							{
-								target[j].reset();
-								printf("%d close to each other\n", i);
-							}
-						}
-
-					}
 					// Render targets to the screen
-					target[i].render(&dDotTexture, *dRenderer);
-
+					target[i].render(&dTargetTexture, *dRenderer);
+					target[i].update(&dXTexture);
 					// Check if target expired
 					if (target[i].targetMiss)
 					{
 						player.targetMiss();
-						target[i].reset();
+						// check for target life time when target expires
+						//player.checkTargetLifeTime(target);
+						target[i].reset(target, i);
 					}
 				}
+				// Function for rendering left panel with scores
 				renderLeftPanel();
+
 				SDL_RenderPresent(dRenderer);
 			}
 		}

@@ -123,13 +123,12 @@ void MDTexture::render(int x, int y, float scale)
 	SDL_RenderCopy(mRenderer, mTexture, NULL, &renderQuad);
 }
 
-
 void MDTexture::setRenderer(SDL_Renderer *renderer)
 {
 	mRenderer = renderer;
 }
 
-SDL_Texture *MDTexture::getTexture()
+SDL_Texture* MDTexture::getTexture()
 {
 	return mTexture;
 }

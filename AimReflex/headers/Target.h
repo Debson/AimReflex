@@ -1,7 +1,10 @@
 #pragma once
+
+#include <vector>
 #include "MDTexture.h"
 #include "game_settings.h"
-#include "../Circle.h"
+#include "../headers/Circle.h"
+#include "../headers/Timer.h"
 
 class Target
 {
@@ -13,21 +16,26 @@ public:
 	void render(MDTexture *texture, SDL_Renderer &renderer);
 
 	void handleInput(SDL_Event *e);
+
 	// Prevent from creating target on another target
 
-	void reset();
+	void update(MDTexture *texture);
+	void reset(std::vector<Target> &target, int numOfTargetHit);
+	void onTargetDeath();
 
 	bool tHit;
 	bool tMiss;
 
 	bool targetMiss;
 
-	MDTexture getTexture();
+	bool getNewPos(std::vector<Target> target, int numOfTargetHit);
+
 
 	float getPosX();
 	float getPosY();
 	float getWidth();
 	float getHeight();
+	float getLifeTime();
 
 	float oldPosX;
 	float oldPosY;
@@ -36,18 +44,30 @@ public:
 
 private:
 	Circle circle;
-	
+	MDTimer timer;
+	MDTexture xIconTexture;
+
 	SDL_Renderer *tRenderer;
+	SDL_Texture *tTexture;
+
+	float lifeTime;
 
 	bool reverse;
 	float scale;
 	float tPosX;
 	float tPosY;
-	float tAlpha;
+
+	float tCircleAlpha;
+	float tXAlpha;
+
+	bool isTargetDead;
+
+	bool startTimer;
+
+
 	bool startCircleBlend;
+	bool startXBlend;
 	
 	float tWidth;
 	float tHeight;
 };
-
-void checkHit();

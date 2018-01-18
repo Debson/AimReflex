@@ -1,37 +1,38 @@
 #pragma once
-
-//Points
 #include "game_settings.h"
+#include "../headers/Target.h"
+#include <vector>
 
 class Player 
 {
 public:
 	Player();
 
-	int getScore();
-
-	int getTargetCount();
-
-	//increase level of difficulty within score growth
-	void checkScore();
-
-
 	void hit();
 	void miss();
 	void targetMiss();
 	void setMaxCombo(int combo);
+	void setAiming(float aiming);
+
+	void checkScore(std::vector<Target> *target);
+	void checkTargetLifeTime(std::vector<Target> target);
+
+	int getScore();
+	int getTargetCount();
+
 
 	int getHits();
 	int getMisses();
 	int getMissedTargets();
 	int getMaxCombo();
 	int getTotalTargets();
-	int getAiming();
+	float getAiming();
 
 	bool pHit;
 	bool pMiss;
 
 	int combo;
+	float totalTargetsTimeAiming;
 
 private:
 
@@ -42,8 +43,7 @@ private:
 	int pMissedTargets;
 	int pMaxCombo;
 	int pTotalTargets;
-	int pAiming;
+	float pAiming;
 
 	bool levelEnabled[LEVEL_COUNT];
-
 };

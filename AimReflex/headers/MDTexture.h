@@ -1,4 +1,5 @@
 #include <SDL_ttf.h>
+#include <iostream>
 
 class MDTexture
 {
@@ -21,7 +22,7 @@ public:
 	void render(int x, int y, float scale);
 
 	void setRenderer(SDL_Renderer *renderer);
-	SDL_Texture *getTexture();
+	SDL_Texture* getTexture();
 
 	int getWidth();
 	int getHeight();
