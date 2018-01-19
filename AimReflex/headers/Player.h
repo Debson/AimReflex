@@ -12,26 +12,24 @@ public:
 	void targetMiss();
 	void setMaxCombo(int combo);
 	void setAiming(float aiming);
-
 	void checkScore(std::vector<Target> *target);
 	void checkTargetLifeTime(std::vector<Target> target);
 
+	float getAiming();
+
 	int getScore();
 	int getTargetCount();
-
-
 	int getHits();
 	int getMisses();
 	int getMissedTargets();
 	int getMaxCombo();
 	int getTotalTargets();
-	float getAiming();
+
+	float totalTargetsTimeAiming;
+	int combo;
 
 	bool pHit;
 	bool pMiss;
-
-	int combo;
-	float totalTargetsTimeAiming;
 
 private:
 

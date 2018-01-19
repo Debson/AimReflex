@@ -9,10 +9,10 @@
 #include "../UI.h"
 
 SDL_Window *dWindow;
-
 SDL_Renderer *dRenderer;
-
 TTF_Font *gFont = NULL;
+
+MDUI UIScreen;
 
 MDTexture dTargetTexture;
 MDTexture dScoreText[2];
@@ -25,33 +25,42 @@ MDTexture dAimingText[2];
 MDTexture dTotalHitsText;
 MDTexture dTotalMissesText;
 MDTexture dTotalMissedTargetsText;
-MDTexture dRText;
-MDTexture dGText;
-MDTexture dBText;
-
-MDTexture dRNumText;
-MDTexture dGNumText;
-MDTexture dBNumText;
-
-MDUI UIScreen;
-MDUI buttonPlus[3];
-MDUI buttonMinus[3];
-
 MDTexture dXTexture;
 
+// Background color adjuster
+MDTexture backgroundChangeColorText;
+MDTexture bRText;
+MDTexture bGText;
+MDTexture bBText;
+MDTexture bRNumText;
+MDTexture bGNumText;
+MDTexture bBNumText;
+MDUI bButtonPlus[3];
+MDUI bButtonMinus[3];
+
+// Target color adjuster
+MDTexture targetChangeColorText;
+MDTexture tRNumText;
+MDTexture tGNumText;
+MDTexture tBNumText;
+MDUI tButtonPlus[3];
+MDUI tButtonMinus[3];
+
+// Colors
+SDL_Color backgroundColor = BACKGROUND_COLOR;
+SDL_Color targetColor = TARGET_COLOR;
+
+// Vector of targets
 std::vector<Target> target;
 
-//Target target[GAME_TARGETS_COUNT];
-Circle circle;
+// Player class to control game logic
 Player player;
 
-bool init();
-
-bool loadMedia();
-
-void close();
-
+bool checkHit(std::vector<Target> target);
 void initRenders();
+bool init();
+bool loadMedia();
+void close();
 
 bool checkHit(std::vector<Target> target)
 {
@@ -104,21 +113,34 @@ void initRenders()
 	dTotalHitsText.setRenderer(dRenderer);
 	dTotalMissesText.setRenderer(dRenderer);
 	dTotalMissedTargetsText.setRenderer(dRenderer);
-	dRText.setRenderer(dRenderer);
-	dGText.setRenderer(dRenderer);
-	dBText.setRenderer(dRenderer);
-	dRNumText.setRenderer(dRenderer);
-	dGNumText.setRenderer(dRenderer);
-	dBNumText.setRenderer(dRenderer);
+	bRText.setRenderer(dRenderer);
+	bGText.setRenderer(dRenderer);
+	bBText.setRenderer(dRenderer);
 
 	UIScreen.init(dRenderer);
-	buttonPlus[0].init(dRenderer);
-	buttonPlus[1].init(dRenderer);
-	buttonPlus[2].init(dRenderer);
-	buttonMinus[0].init(dRenderer);
-	buttonMinus[1].init(dRenderer);
-	buttonMinus[2].init(dRenderer);
-
+	// Background color adjuster
+	backgroundChangeColorText.setRenderer(dRenderer);
+	bRNumText.setRenderer(dRenderer);
+	bGNumText.setRenderer(dRenderer);
+	bBNumText.setRenderer(dRenderer);
+	bButtonPlus[0].init(dRenderer);
+	bButtonPlus[1].init(dRenderer);
+	bButtonPlus[2].init(dRenderer);
+	bButtonMinus[0].init(dRenderer);
+	bButtonMinus[1].init(dRenderer);
+	bButtonMinus[2].init(dRenderer);
+	
+	// Target color adjuster
+	targetChangeColorText.setRenderer(dRenderer);
+	tRNumText.setRenderer(dRenderer);
+	tGNumText.setRenderer(dRenderer);
+	tBNumText.setRenderer(dRenderer);
+	tButtonPlus[0].init(dRenderer);
+	tButtonPlus[1].init(dRenderer);
+	tButtonPlus[2].init(dRenderer);
+	tButtonMinus[0].init(dRenderer);
+	tButtonMinus[1].init(dRenderer);
+	tButtonMinus[2].init(dRenderer);
 }
 
 bool init()
@@ -157,7 +179,7 @@ bool init()
 				else
 				{
 
-					SDL_SetRenderDrawColor(dRenderer, BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, BACKGROUND_COLOR.r);
+					SDL_SetRenderDrawColor(dRenderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.r);
 					initRenders();
 
 					int imgFlags = IMG_INIT_PNG;
@@ -190,7 +212,7 @@ bool loadMedia()
 	}
 	else
 	{
-		if (!dTargetTexture.loadFromFile("resources/ball.png"))
+		if (!dTargetTexture.loadFromFile("resources/ball1.png"))
 		{
 			printf("Could not load target's texture\n");
 			success = false;
@@ -254,17 +276,27 @@ bool loadMedia()
 
 	dTotalMissedTargetsText.renderText("0", otherNumbersSize, textColor);
 
-	dRText.renderText("R:", rgbTextSize, red);
+	bRText.renderText("R:", rgbTextSize, red);
 
-	dGText.renderText("G:", rgbTextSize, green);
+	bGText.renderText("G:", rgbTextSize, green);
 
-	dBText.renderText("B:", rgbTextSize, textColor);
+	bBText.renderText("B:", rgbTextSize, textColor);
 
-	dRNumText.renderText("0", rgbTextSize + 3, textColor);
+	backgroundChangeColorText.renderText("BACKGROUND COLOR", rgbTextSize - 2, textColor);
 
-	dGNumText.renderText("0", rgbTextSize + 3, textColor);
+	bRNumText.renderText("0", rgbTextSize + 3, textColor);
 
-	dBNumText.renderText("0", rgbTextSize + 3, textColor);
+	bGNumText.renderText("0", rgbTextSize + 3, textColor);
+
+	bBNumText.renderText("0", rgbTextSize + 3, textColor);
+
+	targetChangeColorText.renderText("TARGET COLOR", rgbTextSize - 2, textColor);
+
+	tRNumText.renderText("0", rgbTextSize + 3, textColor);
+
+	tGNumText.renderText("0", rgbTextSize + 3, textColor);
+
+	tBNumText.renderText("0", rgbTextSize + 3, textColor);
 
 	return success;
 }
@@ -291,6 +323,17 @@ void close()
 	dTotalHitsText.free();
 	dTotalMissesText.free();
 	dTotalMissedTargetsText.free();
+	backgroundChangeColorText.free();
+	bRText.free();
+	bGText.free();
+	bBText.free();
+	bRNumText.free();
+	bGNumText.free();
+	bBNumText.free();
+	targetChangeColorText.free();
+	tRNumText.free();
+	tGNumText.free();
+	tBNumText.free();
 
 	TTF_CloseFont(gFont);
 	gFont = NULL;
@@ -305,14 +348,125 @@ void close()
 	SDL_Quit();
 }
 
+SDL_Color renderColorAdjuster(SDL_Color colorToChange, 
+							MDTexture *adjusterTitle, MDTexture *rNumText, MDTexture *gNumText,MDTexture *bNumText, 
+							MDUI *buttonPlus, MDUI *buttonMinus, 
+							int offsetX, int offsetY)
+{
+	SDL_Color rgbTextColor = { 0, 0, 0 };
+	SDL_Color color = colorToChange;
+	std::stringstream newText;
+
+	adjusterTitle->render(GAME_WIDTH + 153 - adjusterTitle->getWidth() + offsetX, 290 - adjusterTitle->getHeight() + offsetY, 1);
+
+	SDL_Rect blank = { GAME_WIDTH + 35 + offsetX, 293 + offsetY, 60, 14 };
+	SDL_RenderFillRect(dRenderer, &blank);
+	blank = { GAME_WIDTH + 35 + offsetX, 313 + offsetY, 60, 14 };
+	SDL_RenderFillRect(dRenderer, &blank);
+	blank = { GAME_WIDTH + 35 + offsetX, 333 + offsetY, 60, 14 };
+	SDL_RenderFillRect(dRenderer, &blank);
+
+	bRText.render(GAME_WIDTH + 29 - bRText.getWidth() + offsetX, 308 - bRText.getHeight() + offsetY, 1);
+	bGText.render(GAME_WIDTH + 29 - bGText.getWidth() + offsetX, 328 - bGText.getHeight() + offsetY, 1);
+	bBText.render(GAME_WIDTH + 29 - bBText.getWidth() + offsetX, 348 - bBText.getHeight() + offsetY, 1);
+
+	rNumText->render(GAME_WIDTH + 83 - rNumText->getWidth() + offsetX, 309 - rNumText->getHeight() + offsetY, 1);
+	gNumText->render(GAME_WIDTH + 83 - gNumText->getWidth() + offsetX, 329 - gNumText->getHeight() + offsetY, 1);
+	bNumText->render(GAME_WIDTH + 83 - bNumText->getWidth() + offsetX, 349 - bNumText->getHeight() + offsetY, 1);
+
+	buttonPlus[0].createButtonMinus(GAME_WIDTH + 40 + offsetX, 300 + offsetY, 0, 0);
+	buttonPlus[1].createButtonMinus(GAME_WIDTH + 40 + offsetX, 320 + offsetY, 0, 0);
+	buttonPlus[2].createButtonMinus(GAME_WIDTH + 40 + offsetX, 340 + offsetY, 0, 0);
+
+	buttonMinus[0].createButtonPlus(GAME_WIDTH + 90 + offsetX, 300 + offsetY, 0, 0);
+	buttonMinus[1].createButtonPlus(GAME_WIDTH + 90 + offsetX, 320 + offsetY, 0, 0);
+	buttonMinus[2].createButtonPlus(GAME_WIDTH + 90 + offsetX, 340 + offsetY, 0, 0);
+
+	// Additional variables since SDL_color is Uint8 type
+	short int colorR = colorToChange.r;
+	short int colorG = colorToChange.g;
+	short int colorB = colorToChange.b;
+
+	// If button pressed, change backgroundColors
+	if (buttonPlus[0].isPressed())
+	{
+		colorR -= 20;
+	}
+
+	if (buttonPlus[1].isPressed())
+	{
+		colorG -= 20;
+	}
+	if (buttonPlus[2].isPressed())
+	{
+		colorB -= 20;
+	}
+
+	if (buttonMinus[0].isPressed())
+	{
+		colorR += 20;
+	}
+	if (buttonMinus[1].isPressed())
+	{
+		colorG += 20;
+	}
+	if (buttonMinus[2].isPressed())
+	{
+		colorB += 20;
+	}
+
+	// Check if out of color bounds
+	if (colorR > 255)
+	{
+		colorR = 255;
+	}
+	else if (colorR < 0)
+	{
+		colorR = 0;
+	}
+
+	if (colorG > 255)
+	{
+		colorG = 255;
+	}
+	else if (colorG < 0)
+	{
+		colorG = 0;
+	}
+
+	if (colorB > 255)
+	{
+		colorB = 255;
+	}
+	else if (colorB < 0)
+	{
+		colorB = 0;
+	}
+
+	colorToChange.r = colorR;
+	colorToChange.g = colorG;
+	colorToChange.b = colorB;
+
+	newText.str(std::string());
+	newText << (short int)colorToChange.r;
+	rNumText->loadFromRenderedText(newText.str().c_str(), rgbTextColor);
+
+	newText.str(std::string());
+	newText << (short int)colorToChange.g;
+	gNumText->loadFromRenderedText(newText.str().c_str(), rgbTextColor);
+
+	newText.str(std::string());
+	newText << (short int)colorToChange.b;
+	bNumText->loadFromRenderedText(newText.str().c_str(), rgbTextColor);
+
+	return colorToChange;
+}
+
 void renderLeftPanel()
 {
 	SDL_Color underlineColor = { 204, 204, 204 };
 	SDL_Color textColor = { 102, 194, 255 };
-	SDL_Color rgbTextColor = { 0, 0, 0 };
-	SDL_Color backgroundColor = BACKGROUND_COLOR;
-
-	// Set back render draw blend mode to NONE to prevent from blending textures below (I think so)
+	//Set back render draw blend mode to NONE to prevent from blending textures below (I think so)
 	SDL_SetRenderDrawBlendMode(dRenderer, SDL_BLENDMODE_NONE);
 
 	// Left Panel
@@ -450,41 +604,17 @@ void renderLeftPanel()
 	dTotalMissedTargetsText.loadFromRenderedText(newText.str().c_str(), textColor);
 	// *********************************************************************************
 	
-	// Buttons
-	SDL_Rect blank = { GAME_WIDTH + 35, 293, 60, 14 };
-	SDL_RenderFillRect(dRenderer, &blank);
-	blank = { GAME_WIDTH + 35, 313, 60, 14 };
-	SDL_RenderFillRect(dRenderer, &blank);
-	blank = { GAME_WIDTH + 35, 333, 60, 14 };
-	SDL_RenderFillRect(dRenderer, &blank);
+	// Create and render background color adjuster
+	backgroundColor = renderColorAdjuster(backgroundColor, &backgroundChangeColorText, &bRNumText, &bGNumText,
+		&bBNumText, bButtonPlus, bButtonMinus, 0, -20);
+	
+	// Create and render background color adjuster
+	targetColor = renderColorAdjuster(targetColor, &targetChangeColorText, &tRNumText, &tGNumText,
+		&tBNumText, tButtonPlus, tButtonMinus, 0, 80);
 
-	dRText.render(GAME_WIDTH + 29 - dRText.getWidth(), 308 - dRText.getHeight(), 1);
-	dGText.render(GAME_WIDTH + 29 - dGText.getWidth(), 328 - dGText.getHeight(), 1);
-	dBText.render(GAME_WIDTH + 29 - dBText.getWidth(), 348 - dBText.getHeight(), 1);
-
-	dRNumText.render(GAME_WIDTH + 70 - dRText.getWidth(), 309 - dRText.getHeight(), 1);
-	dGNumText.render(GAME_WIDTH + 70 - dGText.getWidth(), 329 - dGText.getHeight(), 1);
-	dBNumText.render(GAME_WIDTH + 70 - dBText.getWidth(), 349 - dBText.getHeight(), 1);
-
-	buttonPlus[0].createButtonMinus(GAME_WIDTH + 40, 300, 0, 0);
-	buttonPlus[1].createButtonMinus(GAME_WIDTH + 40, 320, 0, 0);
-	buttonPlus[2].createButtonMinus(GAME_WIDTH + 40, 340, 0, 0);
-
-	buttonMinus[0].createButtonPlus(GAME_WIDTH + 90, 300, 0, 0);
-	buttonMinus[1].createButtonPlus(GAME_WIDTH + 90, 320, 0, 0);
-	buttonMinus[2].createButtonPlus(GAME_WIDTH + 90, 340, 0, 0);
-
-	newText.str(std::string());
-	newText << (int)backgroundColor.r;
-	dRNumText.loadFromRenderedText(newText.str().c_str(), rgbTextColor);
-
-	newText.str(std::string());
-	newText << (int)backgroundColor.g;
-	dGNumText.loadFromRenderedText(newText.str().c_str(), rgbTextColor);
-
-	newText.str(std::string());
-	newText << (int)backgroundColor.b;
-	dBNumText.loadFromRenderedText(newText.str().c_str(), rgbTextColor);
+	// Set color of target's texture
+	SDL_SetTextureBlendMode(dTargetTexture.getTexture(), SDL_BLENDMODE_BLEND);
+	SDL_SetTextureColorMod(dTargetTexture.getTexture(), targetColor.r, targetColor.g, targetColor.b);
 
 }
 
@@ -492,22 +622,22 @@ int main(int argc, char* args[])
 {
 	if (!init())
 	{
-		//could not initialize
+		printf("Could not initialize!\n");
 	}
 	else
 	{
 		if (!loadMedia())
 		{
-			//could not load media
+			printf("Could not load media!\n");
 		}
 		else
 		{
+			SDL_Event e;
 			// Start with 2 targets
 			Target newTargets[START_TARGET_COUNT];
 			target.push_back(newTargets[0]);
 			target.push_back(newTargets[1]);
 
-			SDL_Event e;
 
 			bool quit = false;
 			bool quitStartScreen = false;
@@ -531,7 +661,6 @@ int main(int argc, char* args[])
 
 					if (e.key.keysym.sym == SDLK_ESCAPE && e.type == SDL_KEYDOWN && gameStarted && !keyAlreadyPressed)
 					{//Pause game, key can be pressed only once
-						printf("enterd");
 						if (pause)
 						{
 							pause = false;
@@ -544,14 +673,20 @@ int main(int argc, char* args[])
 					}
 					else if (e.key.keysym.sym == SDLK_ESCAPE && e.type == SDL_KEYUP && gameStarted)
 					{// If ESC is up, set keyAlreadyPressed to get ESC input event only once
-						printf("esc up\n");
 						keyAlreadyPressed = false;
 					}
 
 					for (int i = 0; i < 3; ++i)
-					{
-						buttonPlus[i].handleInput(&e);
-						buttonMinus[i].handleInput(&e);
+					{// Check if any of button was pressed, if pressed go out of for loop
+						bButtonPlus[i].handleInput(&e);
+						bButtonMinus[i].handleInput(&e);
+						tButtonPlus[i].handleInput(&e);
+						tButtonMinus[i].handleInput(&e);
+						if (bButtonPlus[i].isPressed() || bButtonMinus[i].isPressed() ||
+							tButtonPlus[i].isPressed() || tButtonMinus[i].isPressed())
+						{
+							break;
+						}
 					}
 
 					if (quitStartScreen && !pause)
@@ -582,12 +717,13 @@ int main(int argc, char* args[])
 				if (quitStartScreen && !pause)
 				{// If start counting is finished, start rendering actuall game, if paused, stop rendering
 					gameStarted = true;
-					SDL_SetRenderDrawColor(dRenderer, BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, BACKGROUND_COLOR.r);
+					SDL_SetRenderDrawColor(dRenderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.r);
 					SDL_RenderClear(dRenderer);
 
 					for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
 					{
 						/// Render targets to the screen
+						target[i].setTargetBordersColor(targetColor);
 						target[i].render(&dTargetTexture, *dRenderer);
 						target[i].renderDeathX(&dXTexture);
 						/// Unpause targets timers
@@ -602,7 +738,7 @@ int main(int argc, char* args[])
 				}
 				else if (pause)
 				{// If ESC clicked, render pause screen
-					UIScreen.renderPauseScreen();
+					UIScreen.renderPauseScreen(backgroundColor);
 					for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
 					{// Pause all timers to prevent from counting target's life time while paused
 						target[i].pauseTargetTimer();
@@ -619,18 +755,24 @@ int main(int argc, char* args[])
 					}
 					else
 					{// Redner start screen
-						SDL_Color startScreenColor = BACKGROUND_COLOR;
-						UIScreen.renderStartScreen(startScreenColor);
+						UIScreen.renderStartScreen(backgroundColor);
 					}
 				}
 				/// Render left panel with scores
 				renderLeftPanel();
+				for (int i = 0; i < 3; ++i)
+				{// Reset buttons state on end of a frame(TODO do it more efficent?)
+					bButtonPlus[i].resetButtonState();
+					bButtonMinus[i].resetButtonState();
+					tButtonPlus[i].resetButtonState();
+					tButtonMinus[i].resetButtonState();
+				}
 
 				SDL_RenderPresent(dRenderer);
 			}
 		}
 	}
-
+	// Free memory
 	close();
 
 	return 0;

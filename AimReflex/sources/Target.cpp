@@ -7,9 +7,12 @@ Target::Target()
 {
 	tPosX = (float)((rand() % (GAME_WIDTH - MAX_TARGET_WIDTH * 2)) + MAX_TARGET_WIDTH);
 	tPosY = (float)((rand() % (GAME_HEIGHT - MAX_TARGET_HEIGHT * 2)) + MAX_TARGET_HEIGHT);
+	tCurrentPosX = 0.f;
+	tCurrentPosY = 0.f;
 	scale = 0.f;
 	tCircleAlpha = 100.f;
 	tXAlpha = 100.f;
+	bordersColor = { 255, 255, 255 };
 
 	startCircleBlend = false;
 	startXBlend = false;
@@ -31,7 +34,8 @@ Target::~Target()
 void Target::render(MDTexture *texture, SDL_Renderer &renderer)
 {
 	tRenderer = &renderer;
-
+	tTargetTexture = texture;
+	lifeTime = timer.getTicks();
 	// Scale target to MAX_TARGET_SCALE and then revert and scale it back to 0
 	if (scale > MAX_TARGET_SCALE)
 	{
@@ -47,7 +51,6 @@ void Target::render(MDTexture *texture, SDL_Renderer &renderer)
 		timer.start();
 		startTimer = false;
 	}
-
 	// Step for scaling
 	if (reverse)
 	{
@@ -57,19 +60,19 @@ void Target::render(MDTexture *texture, SDL_Renderer &renderer)
 	{
 		scale += 0.00028f + scale * 0.001f;
 	}
-
 	// Set offset to set tPosX and tPosY exactly in center of target
 	float diff = texture->getHeight() * scale * 0.5f;
 	tWidth = texture->getWidth() * scale;
 	tHeight = texture->getHeight() * scale;
-	float tempX = tPosX;
-	float tempY = tPosY;
-	tempX -= diff;
-	tempY -= diff;
+
+	tCurrentPosX = tPosX;
+	tCurrentPosY = tPosY;
+	tCurrentPosX -= diff;
+	tCurrentPosY -= diff;
 
 	if (startCircleBlend)
 	{
-		circle.draw(tRenderer, oldPosX, oldPosY, oldWidth / 2, &tCircleAlpha);
+		circle.draw(tRenderer, oldPosX, oldPosY, oldWidth / 2, &tCircleAlpha, bordersColor);
 
 		if (tCircleAlpha < 10.f)
 		{
@@ -77,7 +80,7 @@ void Target::render(MDTexture *texture, SDL_Renderer &renderer)
 		}
 	}
 	//Render target's texture
-	texture->render((int)tempX, (int)tempY, scale);
+	texture->render((int)tCurrentPosX, (int)tCurrentPosY, scale);
 
 	// Draw target's colliders
 	/*SDL_Rect outline = { (int)tempX, (int)tempY, (int)tWidth, (int)tHeight };
@@ -134,22 +137,16 @@ void Target::handleInput(SDL_Event *e)
 
 void Target::reset(std::vector<Target> &target, int numOfTargetHit)
 {
-	lifeTime = timer.getTicks();
-	//printf("%f\n", lifeTime);
-
 	// Start target life time
 	startTimer = true;
-
 	// Reset
 	tHit = false;
-
 	/// Variables for drawing a circle
 	tCircleAlpha = 100;
 	oldPosX = tPosX;
 	oldPosY = tPosY;
 	oldWidth = tWidth;
 	oldHeight = tHeight;
-	///
 
 	tPosX = rand() % (GAME_WIDTH - 150) + 75;
 	tPosY = rand() % (GAME_HEIGHT - 150) + 75;
@@ -207,6 +204,11 @@ void Target::onTargetDeath()
 	startXBlend = true;
 }
 
+void Target::setTargetBordersColor(SDL_Color color)
+{
+	bordersColor = color;
+}
+
 void Target::renderDeathX(MDTexture *texture)
 {
 	if (startXBlend)
@@ -261,6 +263,7 @@ void Target::pauseTargetTimer()
 		timer.pause();
 		timerPaused = true;
 	}
+	tTargetTexture->render(tCurrentPosX, tCurrentPosY, scale);
 }
 
 void Target::unpauseTargetTimer()

@@ -13,9 +13,9 @@ public:
 
 	Uint32 getTicks();
 
+
 private:
 	Uint32 tStartTicks;
-
 	Uint32 tPausedTicks;
 
 	bool tPaused;

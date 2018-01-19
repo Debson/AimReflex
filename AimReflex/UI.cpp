@@ -9,7 +9,9 @@ MDUI::MDUI()
 	buttonX = 0;
 	buttonY = 0;
 	buttonSize = 16;
-	//text = "0";
+
+	buttonPressed = false;
+	screenColor = { 0, 0, 0 };
 }
 
 bool MDUI::init(SDL_Renderer *renderer)
@@ -71,7 +73,7 @@ void MDUI::renderStartScreen(SDL_Color color)
 	}
 	else
 	{
-		startScreenColor = color;
+		screenColor = color;
 
 		SDL_SetRenderDrawColor(uiRenderer, color.r, color.g, color.b, color.a);
 		SDL_RenderFillRect(uiRenderer, &startScreenRect);
@@ -82,10 +84,10 @@ void MDUI::renderStartScreen(SDL_Color color)
 	}
 }
 
-void MDUI::renderPauseScreen()
+void MDUI::renderPauseScreen(SDL_Color color)
 {
-	SDL_SetRenderDrawBlendMode(uiRenderer, SDL_BLENDMODE_BLEND);
-	SDL_SetRenderDrawColor(uiRenderer, startScreenColor.r, startScreenColor.g, startScreenColor.b, 2);
+	screenColor = color;
+	SDL_SetRenderDrawColor(uiRenderer, screenColor.r, screenColor.g, screenColor.b, 3);
 	SDL_RenderFillRect(uiRenderer, &startScreenRect);
 
 	textTexture.renderText("CLICK ESC TO UNPAUSE", 25, textColor);
@@ -122,8 +124,12 @@ void MDUI::handleInput(SDL_Event *e)
 		{
 			if (e->type == SDL_MOUSEBUTTONDOWN)
 			{
-				printf("button pressed\n");
+				buttonPressed = true;
 			}
+		}
+		else
+		{
+			buttonPressed = false;
 		}
 	}
 }
@@ -162,7 +168,7 @@ bool MDUI::handleStartScreenInput(SDL_Event *e)
 bool MDUI::startCounter(int time)
 {
 	// EDITABLE
-	SDL_SetRenderDrawColor(uiRenderer, startScreenColor.r, startScreenColor.g, startScreenColor.b, startScreenColor.a);
+	SDL_SetRenderDrawColor(uiRenderer, screenColor.r, screenColor.g, screenColor.b, screenColor.a);
 	SDL_RenderFillRect(uiRenderer, &startScreenRect);
 
 	if (timerStarted)
@@ -191,6 +197,17 @@ bool MDUI::startCounter(int time)
 
 	return false;
 }
+
+bool MDUI::isPressed()
+{
+	return buttonPressed;
+}
+
+void MDUI::resetButtonState()
+{
+	buttonPressed = false;
+}
+
 /*
 Uint32 MDUI::callback(Uint32 interval, void *param)
 {

@@ -58,6 +58,7 @@ void Player::checkTargetLifeTime(std::vector<Target> target)
 	{
 		if (target[i].tHit || target[i].targetMiss)
 		{
+			printf("%f\n", target[i].getLifeTime());
 			pAiming += target[i].getLifeTime();
 		}
 	}
