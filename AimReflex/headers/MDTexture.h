@@ -14,8 +14,10 @@ public:
 	bool loadFromFile(std::string path);
 
 #ifdef _SDL_TTF_H
+	bool loadFont(std::string path);
 	bool loadFromRenderedText(std::string textureText, SDL_Color textColor);
 	void setFont(TTF_Font *font);
+	void renderText(std::string text, Uint8 size, SDL_Color textColor);
 #endif
 	void free();
 
@@ -31,6 +33,8 @@ private:
 	SDL_Texture *mTexture;
 	SDL_Renderer *mRenderer;
 	TTF_Font *mFont;
+
+	bool fontOpenedOnce;
 
 	int mWidth;
 	int mHeight;

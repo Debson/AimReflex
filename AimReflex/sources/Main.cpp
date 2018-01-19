@@ -1,15 +1,12 @@
-#include <iostream>
 #include <cmath>
-#include <vector>
 #include <sstream>
 #include <iomanip>
 
-#include <SDL.h>
 #include <SDL_image.h>
-#include <SDL_ttf.h>
 
 #include "../headers/Timer.h"
 #include "../headers/Player.h"
+#include "../UI.h"
 
 SDL_Window *dWindow;
 
@@ -28,6 +25,17 @@ MDTexture dAimingText[2];
 MDTexture dTotalHitsText;
 MDTexture dTotalMissesText;
 MDTexture dTotalMissedTargetsText;
+MDTexture dRText;
+MDTexture dGText;
+MDTexture dBText;
+
+MDTexture dRNumText;
+MDTexture dGNumText;
+MDTexture dBNumText;
+
+MDUI UIScreen;
+MDUI buttonPlus[3];
+MDUI buttonMinus[3];
 
 MDTexture dXTexture;
 
@@ -43,7 +51,7 @@ bool loadMedia();
 
 void close();
 
-void renderText(std::string text, Uint8 size, SDL_Color textColor, MDTexture *texture);
+void initRenders();
 
 bool checkHit(std::vector<Target> target)
 {
@@ -71,6 +79,46 @@ bool checkHit(std::vector<Target> target)
 		player.miss();
 	}
 	return hit > 0;
+}
+
+void initRenders()
+{
+	// Set renderer to every texture
+	// TODO Is it possible to do it more efficent?
+	dTargetTexture.setRenderer(dRenderer);
+	dTargetTexture.setRenderer(dRenderer);
+	dScoreText[0].setRenderer(dRenderer);
+	dScoreText[1].setRenderer(dRenderer);
+	dHitsText[0].setRenderer(dRenderer);
+	dHitsText[1].setRenderer(dRenderer);
+	dMissesText[0].setRenderer(dRenderer);
+	dMissesText[1].setRenderer(dRenderer);
+	dMissedTargetsText[0].setRenderer(dRenderer);
+	dMissedTargetsText[1].setRenderer(dRenderer);
+	dMaxComboText[0].setRenderer(dRenderer);
+	dMaxComboText[1].setRenderer(dRenderer);
+	dTotalTargetsText[0].setRenderer(dRenderer);
+	dTotalTargetsText[1].setRenderer(dRenderer);
+	dAimingText[0].setRenderer(dRenderer);
+	dAimingText[1].setRenderer(dRenderer);
+	dTotalHitsText.setRenderer(dRenderer);
+	dTotalMissesText.setRenderer(dRenderer);
+	dTotalMissedTargetsText.setRenderer(dRenderer);
+	dRText.setRenderer(dRenderer);
+	dGText.setRenderer(dRenderer);
+	dBText.setRenderer(dRenderer);
+	dRNumText.setRenderer(dRenderer);
+	dGNumText.setRenderer(dRenderer);
+	dBNumText.setRenderer(dRenderer);
+
+	UIScreen.init(dRenderer);
+	buttonPlus[0].init(dRenderer);
+	buttonPlus[1].init(dRenderer);
+	buttonPlus[2].init(dRenderer);
+	buttonMinus[0].init(dRenderer);
+	buttonMinus[1].init(dRenderer);
+	buttonMinus[2].init(dRenderer);
+
 }
 
 bool init()
@@ -110,7 +158,7 @@ bool init()
 				{
 
 					SDL_SetRenderDrawColor(dRenderer, BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, BACKGROUND_COLOR.r);
-					dTargetTexture.setRenderer(dRenderer);
+					initRenders();
 
 					int imgFlags = IMG_INIT_PNG;
 					if (!(IMG_Init(imgFlags) & imgFlags))
@@ -121,7 +169,7 @@ bool init()
 
 					if (TTF_Init() == -1)
 					{
-						printf("TTF not working fuck");
+						printf("TTF not working");
 						success = false;
 					}
 				}
@@ -156,55 +204,67 @@ bool loadMedia()
 	}
 
 
-
 	// Size of different texts
 	Uint8 scoreSize = 48;
 	Uint8 scoreNumberSize = 36;
 	Uint8 textSize = 16;
 	Uint8 numbersSize = 22;
 	Uint8 otherNumbersSize = 15;
+	Uint8 rgbTextSize = 22;
 
 	SDL_Color textColor = { 102, 194, 255 };
+	SDL_Color red = { 255, 0, 0 };
+	SDL_Color green = { 0, 255, 0 };
+	SDL_Color blue = { 0, 0, 255 };
 
 	//Set text, size and color
-	renderText("Score", scoreSize, textColor, &dScoreText[0]);
+	dScoreText[0].renderText("Score", scoreSize, textColor);
 
-	renderText("Hits", textSize, textColor, &dHitsText[0]);
+	dHitsText[0].renderText("Hits", textSize, textColor);
 
-	renderText("Misses", textSize, textColor, &dMissesText[0]);
+	dMissesText[0].renderText("Misses", textSize, textColor);
 
-	renderText("Missed targets", textSize, textColor, &dMissedTargetsText[0]);
+	dMissedTargetsText[0].renderText("Missed targets", textSize, textColor);
 
-	renderText("MAX combo", textSize, textColor, &dMaxComboText[0]);
+	dMaxComboText[0].renderText("MAX combo", textSize, textColor);
 
-	renderText("Total targets", textSize, textColor, &dTotalTargetsText[0]);
+	dTotalTargetsText[0].renderText("Total targets", textSize, textColor);
 
-	renderText("Aiming", textSize, textColor, &dAimingText[0]);
+	dAimingText[0].renderText("Aiming", textSize, textColor);
 
 
 
-	renderText("0", scoreNumberSize, textColor, &dScoreText[1]);
+	dScoreText[1].renderText("0", scoreNumberSize, textColor);
 
-	renderText("0", numbersSize, textColor, &dHitsText[1]);
+	dHitsText[1].renderText("0", numbersSize, textColor);
 
-	renderText("0", numbersSize, textColor, &dMissesText[1]);
+	dMissesText[1].renderText("0", numbersSize, textColor);
 
-	renderText("0", numbersSize, textColor, &dMissedTargetsText[1]);
+	dMissedTargetsText[1].renderText("0", numbersSize, textColor);
 
-	renderText("0", numbersSize, textColor, &dMaxComboText[1]);
+	dMaxComboText[1].renderText("0", numbersSize, textColor);
 
-	renderText("0", numbersSize, textColor, &dTotalTargetsText[1]);
+	dTotalTargetsText[1].renderText("0", numbersSize, textColor);
 
-	renderText("0", numbersSize, textColor, &dAimingText[1]);
+	dAimingText[1].renderText("0", numbersSize, textColor);
 
-	renderText("0", numbersSize, textColor, &dTotalHitsText);
+	dTotalHitsText.renderText("0", otherNumbersSize, textColor);
 
-	renderText("0", otherNumbersSize, textColor, &dTotalHitsText);
+	dTotalMissesText.renderText("0", otherNumbersSize, textColor);
 
-	renderText("0", otherNumbersSize, textColor, &dTotalMissesText);
+	dTotalMissedTargetsText.renderText("0", otherNumbersSize, textColor);
 
-	renderText("0", otherNumbersSize, textColor, &dTotalMissedTargetsText);
+	dRText.renderText("R:", rgbTextSize, red);
 
+	dGText.renderText("G:", rgbTextSize, green);
+
+	dBText.renderText("B:", rgbTextSize, textColor);
+
+	dRNumText.renderText("0", rgbTextSize + 3, textColor);
+
+	dGNumText.renderText("0", rgbTextSize + 3, textColor);
+
+	dBNumText.renderText("0", rgbTextSize + 3, textColor);
 
 	return success;
 }
@@ -245,22 +305,12 @@ void close()
 	SDL_Quit();
 }
 
-void renderText(std::string text, Uint8 size, SDL_Color textColor, MDTexture *texture)
-{
-	gFont = TTF_OpenFont("resources/ProggySmall.ttf", size);
-
-	texture->setFont(gFont);
-	texture->setRenderer(dRenderer);
-	if (!texture->loadFromRenderedText(text, textColor))
-	{
-		printf("Unable to road texture\n");
-	}
-}
-
 void renderLeftPanel()
 {
 	SDL_Color underlineColor = { 204, 204, 204 };
 	SDL_Color textColor = { 102, 194, 255 };
+	SDL_Color rgbTextColor = { 0, 0, 0 };
+	SDL_Color backgroundColor = BACKGROUND_COLOR;
 
 	// Set back render draw blend mode to NONE to prevent from blending textures below (I think so)
 	SDL_SetRenderDrawBlendMode(dRenderer, SDL_BLENDMODE_NONE);
@@ -399,6 +449,43 @@ void renderLeftPanel()
 	newText << player.getMissedTargets() * TARGET_MISS * -1;
 	dTotalMissedTargetsText.loadFromRenderedText(newText.str().c_str(), textColor);
 	// *********************************************************************************
+	
+	// Buttons
+	SDL_Rect blank = { GAME_WIDTH + 35, 293, 60, 14 };
+	SDL_RenderFillRect(dRenderer, &blank);
+	blank = { GAME_WIDTH + 35, 313, 60, 14 };
+	SDL_RenderFillRect(dRenderer, &blank);
+	blank = { GAME_WIDTH + 35, 333, 60, 14 };
+	SDL_RenderFillRect(dRenderer, &blank);
+
+	dRText.render(GAME_WIDTH + 29 - dRText.getWidth(), 308 - dRText.getHeight(), 1);
+	dGText.render(GAME_WIDTH + 29 - dGText.getWidth(), 328 - dGText.getHeight(), 1);
+	dBText.render(GAME_WIDTH + 29 - dBText.getWidth(), 348 - dBText.getHeight(), 1);
+
+	dRNumText.render(GAME_WIDTH + 70 - dRText.getWidth(), 309 - dRText.getHeight(), 1);
+	dGNumText.render(GAME_WIDTH + 70 - dGText.getWidth(), 329 - dGText.getHeight(), 1);
+	dBNumText.render(GAME_WIDTH + 70 - dBText.getWidth(), 349 - dBText.getHeight(), 1);
+
+	buttonPlus[0].createButtonMinus(GAME_WIDTH + 40, 300, 0, 0);
+	buttonPlus[1].createButtonMinus(GAME_WIDTH + 40, 320, 0, 0);
+	buttonPlus[2].createButtonMinus(GAME_WIDTH + 40, 340, 0, 0);
+
+	buttonMinus[0].createButtonPlus(GAME_WIDTH + 90, 300, 0, 0);
+	buttonMinus[1].createButtonPlus(GAME_WIDTH + 90, 320, 0, 0);
+	buttonMinus[2].createButtonPlus(GAME_WIDTH + 90, 340, 0, 0);
+
+	newText.str(std::string());
+	newText << (int)backgroundColor.r;
+	dRNumText.loadFromRenderedText(newText.str().c_str(), rgbTextColor);
+
+	newText.str(std::string());
+	newText << (int)backgroundColor.g;
+	dGNumText.loadFromRenderedText(newText.str().c_str(), rgbTextColor);
+
+	newText.str(std::string());
+	newText << (int)backgroundColor.b;
+	dBNumText.loadFromRenderedText(newText.str().c_str(), rgbTextColor);
+
 }
 
 int main(int argc, char* args[])
@@ -415,69 +502,128 @@ int main(int argc, char* args[])
 		}
 		else
 		{
-			Target newTargets[2];
+			// Start with 2 targets
+			Target newTargets[START_TARGET_COUNT];
 			target.push_back(newTargets[0]);
 			target.push_back(newTargets[1]);
 
 			SDL_Event e;
+
 			bool quit = false;
-			bool callOnce = false;
+			bool quitStartScreen = false;
+			bool startCounter = false;
+			bool gameStarted = false;
+			bool pause = false;
+			bool keyAlreadyPressed = false;
 
 			while (!quit)
 			{
 				while (SDL_PollEvent(&e) != 0)
 				{
 					if (e.type == SDL_QUIT)
-					{
+					{// If exit clicked, exit game
 						quit = true;
 					}
+					else if (e.type == SDL_MOUSEBUTTONDOWN && UIScreen.handleStartScreenInput(&e) && !startCounter)
+					{// If mouse button pressed on starting screen, start counter, !startCounter used to enter do not enter if after counter started
+						startCounter = true;
+					}
 
-					bool targetWasHit = true;
-					for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
-					{
-						target[i].handleInput(&e);
-						if (target[i].tHit && targetWasHit)
+					if (e.key.keysym.sym == SDLK_ESCAPE && e.type == SDL_KEYDOWN && gameStarted && !keyAlreadyPressed)
+					{//Pause game, key can be pressed only once
+						printf("enterd");
+						if (pause)
 						{
-							//printf("%d\n", i);
-							if (checkHit(target))
+							pause = false;
+						}
+						else
+						{
+							pause = true;
+						}
+						keyAlreadyPressed = true;
+					}
+					else if (e.key.keysym.sym == SDLK_ESCAPE && e.type == SDL_KEYUP && gameStarted)
+					{// If ESC is up, set keyAlreadyPressed to get ESC input event only once
+						printf("esc up\n");
+						keyAlreadyPressed = false;
+					}
+
+					for (int i = 0; i < 3; ++i)
+					{
+						buttonPlus[i].handleInput(&e);
+						buttonMinus[i].handleInput(&e);
+					}
+
+					if (quitStartScreen && !pause)
+					{// If start counting is finished, start checking events and other properties of target
+						/// If hit, dont call checkHit function in next for loop iteration
+						bool targetWasHit = true;
+						for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
+						{
+							target[i].handleInput(&e);
+							if (target[i].tHit && targetWasHit)
 							{
-								player.checkTargetLifeTime(target);
-								target[i].reset(target, i);
-								targetWasHit = false;
+								if (checkHit(target))
+								{
+									player.checkTargetLifeTime(target);
+									target[i].reset(target, i);
+									targetWasHit = false;
+								}
 							}
 						}
-					}
-					if (e.type == SDL_MOUSEBUTTONDOWN && targetWasHit)
-					{
-						if (checkHit(target))
-						{
-
+						if (e.type == SDL_MOUSEBUTTONDOWN && targetWasHit)
+						{// Methods that can be called only once and when mouse button pressed
+							checkHit(target);
+							player.checkScore(&target);
 						}
-						
-						// Methods that can be called only once and when mouse button pressed
-						player.checkScore(&target);
-						// Check for target life time when button pressed(if hit)
 					}
-				}
+				} //end Poll event while
 
-				SDL_SetRenderDrawColor(dRenderer, BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, BACKGROUND_COLOR.r);
-				SDL_RenderClear(dRenderer);
+				if (quitStartScreen && !pause)
+				{// If start counting is finished, start rendering actuall game, if paused, stop rendering
+					gameStarted = true;
+					SDL_SetRenderDrawColor(dRenderer, BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, BACKGROUND_COLOR.r);
+					SDL_RenderClear(dRenderer);
 
-				for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
-				{
-					// Render targets to the screen
-					target[i].render(&dTargetTexture, *dRenderer);
-					target[i].update(&dXTexture);
-					// Check if target expired
-					if (target[i].targetMiss)
+					for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
 					{
-						player.targetMiss();
-						// check for target life time when target expires
-						//player.checkTargetLifeTime(target);
-						target[i].reset(target, i);
+						/// Render targets to the screen
+						target[i].render(&dTargetTexture, *dRenderer);
+						target[i].renderDeathX(&dXTexture);
+						/// Unpause targets timers
+						target[i].unpauseTargetTimer();
+						/// Check if target expired
+						if (target[i].targetMiss)
+						{
+							player.targetMiss();
+							target[i].reset(target, i);
+						}
 					}
 				}
-				// Function for rendering left panel with scores
+				else if (pause)
+				{// If ESC clicked, render pause screen
+					UIScreen.renderPauseScreen();
+					for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
+					{// Pause all timers to prevent from counting target's life time while paused
+						target[i].pauseTargetTimer();
+					}
+				}
+				else
+				{
+					if (startCounter)
+					{// Start start screen counter
+						if (UIScreen.startCounter(3000))
+						{// startCounter() will return true after 3000ms
+							quitStartScreen = true;
+						}
+					}
+					else
+					{// Redner start screen
+						SDL_Color startScreenColor = BACKGROUND_COLOR;
+						UIScreen.renderStartScreen(startScreenColor);
+					}
+				}
+				/// Render left panel with scores
 				renderLeftPanel();
 
 				SDL_RenderPresent(dRenderer);

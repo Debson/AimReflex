@@ -10,7 +10,7 @@ const int GAME_WIDTH = 640;
 const int GAME_HEIGHT = 480;
 
 // Background color
-const SDL_Color BACKGROUND_COLOR = { 0, 0, 0, 255 };
+const SDL_Color BACKGROUND_COLOR = { 0, 200, 200, 255 };
 
 // How many levels of difficulty
 const int LEVEL_COUNT = 20;

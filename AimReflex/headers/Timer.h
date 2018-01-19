@@ -8,14 +8,16 @@ public:
 
 	void start();
 	void stop();
+	void pause();
+	void unpause();
 
 	Uint32 getTicks();
 
 private:
-	Uint32 mStartTicks;
+	Uint32 tStartTicks;
 
-	Uint32 mPausedTicks;
+	Uint32 tPausedTicks;
 
-	bool mPaused;
-	bool mStarted;
+	bool tPaused;
+	bool tStarted;
 };

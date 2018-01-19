@@ -19,6 +19,8 @@ Target::Target()
 	tHit = false;
 	tMiss = false;
 	startTimer = true;
+	timerPaused = false;
+	timerUnpaused = false;
 }
 
 Target::~Target()
@@ -205,7 +207,7 @@ void Target::onTargetDeath()
 	startXBlend = true;
 }
 
-void Target::update(MDTexture *texture)
+void Target::renderDeathX(MDTexture *texture)
 {
 	if (startXBlend)
 	{
@@ -250,5 +252,23 @@ float Target::getHeight()
 float Target::getLifeTime()
 {
 	return lifeTime;
+}
+
+void Target::pauseTargetTimer()
+{
+	if (!timerPaused)
+	{
+		timer.pause();
+		timerPaused = true;
+	}
+}
+
+void Target::unpauseTargetTimer()
+{
+	if (timerPaused)
+	{
+		timer.unpause();
+		timerPaused = false;
+	}
 }
 

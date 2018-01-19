@@ -19,7 +19,7 @@ public:
 
 	// Prevent from creating target on another target
 
-	void update(MDTexture *texture);
+	void renderDeathX(MDTexture *texture);
 	void reset(std::vector<Target> &target, int numOfTargetHit);
 	void onTargetDeath();
 
@@ -36,6 +36,9 @@ public:
 	float getWidth();
 	float getHeight();
 	float getLifeTime();
+	void pauseTargetTimer();
+	void unpauseTargetTimer();
+
 
 	float oldPosX;
 	float oldPosY;
@@ -49,6 +52,9 @@ private:
 
 	SDL_Renderer *tRenderer;
 	SDL_Texture *tTexture;
+
+	bool timerPaused;
+	bool timerUnpaused;
 
 	float lifeTime;
 

@@ -1,5 +1,4 @@
 #pragma once
-#include "game_settings.h"
 #include "../headers/Target.h"
 #include <vector>
 

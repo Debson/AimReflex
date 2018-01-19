@@ -10,6 +10,8 @@ MDTexture::MDTexture()
 	mRenderer = NULL;
 	mFont = NULL;
 	mTexture = NULL;
+	
+	fontOpenedOnce = false;
 
 	mWidth = 0;
 	mHeight = 0;
@@ -101,6 +103,20 @@ void MDTexture::setFont(TTF_Font *font)
 	mFont = font;
 }
 
+void MDTexture::renderText(std::string text, Uint8 size, SDL_Color textColor)
+{
+	if (!fontOpenedOnce)
+	{//Open font only once in case this method is called multiple times in other function(performance issues)
+		mFont = TTF_OpenFont("resources/ProggySmall.ttf", size);
+		setFont(mFont);
+		fontOpenedOnce = true;
+	}
+
+	if (!loadFromRenderedText(text, textColor))
+	{
+		printf("Unable to load texture\n");
+	}
+}
 #endif
 
 void MDTexture::free()
