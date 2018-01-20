@@ -1,5 +1,5 @@
 # *Aim Reflex*
-Reflex based game made enteirly in ***C++*** using ***SDL2*** libraries.
+Reflex based game made entirely in ***C++*** using ***SDL2*** libraries.
 That's my first game made with SDL2.
 
 *Short preview of how game does look like.*
