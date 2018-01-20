@@ -47,3 +47,5 @@
 *.ilk
 *.enc
 *.vdproj
+*.db-wal
+*.db-shm

@@ -189,7 +189,6 @@ bool Target::getNewPos(std::vector<Target> target, int numOfTargetHit)
 			{
 				tPosX = rand() % (GAME_WIDTH - 150) + 75;
 				tPosY = rand() % (GAME_HEIGHT - 150) + 75;
-				//printf("%d close to each other\n", j);
 				repeat = false;
 			}
 		}
