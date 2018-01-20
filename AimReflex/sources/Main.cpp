@@ -6,7 +6,7 @@
 
 #include "../headers/Timer.h"
 #include "../headers/Player.h"
-#include "../UI.h"
+#include "../headers/UI.h"
 
 SDL_Window *dWindow;
 SDL_Renderer *dRenderer;
@@ -57,10 +57,6 @@ std::vector<Target> target;
 Player player;
 
 bool checkHit(std::vector<Target> target);
-void initRenders();
-bool init();
-bool loadMedia();
-void close();
 
 bool checkHit(std::vector<Target> target)
 {
@@ -357,7 +353,7 @@ SDL_Color renderColorAdjuster(SDL_Color colorToChange,
 	SDL_Color color = colorToChange;
 	std::stringstream newText;
 
-	adjusterTitle->render(GAME_WIDTH + 153 - adjusterTitle->getWidth() + offsetX, 290 - adjusterTitle->getHeight() + offsetY, 1);
+	adjusterTitle->render(GAME_WIDTH + 9 + offsetX, 275 + offsetY, 1);
 
 	SDL_Rect blank = { GAME_WIDTH + 35 + offsetX, 293 + offsetY, 60, 14 };
 	SDL_RenderFillRect(dRenderer, &blank);
@@ -748,7 +744,7 @@ int main(int argc, char* args[])
 				{
 					if (startCounter)
 					{// Start start screen counter
-						if (UIScreen.startCounter(3000))
+						if (UIScreen.startCounter(3000, backgroundColor))
 						{// startCounter() will return true after 3000ms
 							quitStartScreen = true;
 						}

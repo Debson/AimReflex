@@ -1,47 +1,70 @@
-#include "Timer.h"
+#include "../headers/Timer.h"
 
 MDTimer::MDTimer()
 {
-	mStartTicks = 0;
-	mPausedTicks = 0;
+	tStartTicks = 0;
+	tPausedTicks = 0;
 
-	mPaused = false;
-	mStarted = false;
+	tPaused = false;
+	tStarted = false;
 }
 
 void MDTimer::start()
 {
-	mStarted = true;
+	tStarted = true;
 
-	mPaused = false;
+	tPaused = false;
 
-	mStartTicks = SDL_GetTicks();
-	mPausedTicks = 0;
+	tStartTicks = SDL_GetTicks();
+	tPausedTicks = 0;
 }
 
 void MDTimer::stop()
 {
-	mStarted = false;
+	tStarted = false;
 
-	mPaused = false;
+	tPaused = false;
 
-	mStartTicks = 0;
-	mPausedTicks = 0;
+	tStartTicks = 0;
+	tPausedTicks = 0;
+}
+
+void MDTimer::pause()
+{
+	if (tStarted && !tPaused)
+	{
+		tPaused = true;
+
+		tPausedTicks = SDL_GetTicks() - tStartTicks;
+		tStartTicks = 0;
+	}
+}
+
+void MDTimer::unpause()
+{
+	if (tStarted && tPaused)
+	{
+		tPaused = false;
+
+		tStartTicks = SDL_GetTicks() - tPausedTicks;
+
+		tPausedTicks = 0;
+	}
 }
 
 Uint32 MDTimer::getTicks()
 {
 	Uint32 time = 0;
 
-	if (mStarted)
+	if (tStarted)
 	{
-		if (mPaused)
+		if (tPaused)
 		{
-			time = mPausedTicks;
+			time = tPausedTicks;
 		}
 		else
 		{
-			time = SDL_GetTicks() - mStartTicks;
+			time = SDL_GetTicks() - tStartTicks;
 		}
 	}
 

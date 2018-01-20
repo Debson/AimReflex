@@ -4,7 +4,6 @@
 Player::Player()
 {
 	pTargetCount = START_TARGET_COUNT;
-
 	pHit = false;
 	pMiss = false;
 
@@ -17,8 +16,8 @@ Player::Player()
 	pMaxCombo = 0;
 	pTotalTargets = START_TARGET_COUNT;
 	pAiming = 0.f;
-
-	combo = 0;
+	pCurrentLevel = 0;
+	pCombo = 0;
 
 	for (int i = 0; i < LEVEL_COUNT; ++i)
 	{//Disable all levels on start
@@ -28,27 +27,48 @@ Player::Player()
 
 void Player::checkScore(std::vector<Target> *target)
 {
-	bool createNew = false;
-
-	if (pScore > 6000 && !levelEnabled[0])
+	if (pScore > 1 * 12000 && !levelEnabled[0])
 	{
 		Target newTarget;
 		target->push_back(newTarget);
 		levelEnabled[0] = true;
 	}
 
-	if (pScore > 9000 && !levelEnabled[1])
+	if (pScore > 2 * 12000 && !levelEnabled[1])
 	{
 		Target newTarget;
 		target->push_back(newTarget);
 		levelEnabled[1] = true;
 	}
-
-	if (pScore > 12000 && !levelEnabled[2])
+	if (pScore > 5 * 12000 && !levelEnabled[2])
 	{
 		Target newTarget;
 		target->push_back(newTarget);
 		levelEnabled[2] = true;
+	}
+	if (pScore > 8 * 12000 && !levelEnabled[3])
+	{
+		Target newTarget;
+		target->push_back(newTarget);
+		levelEnabled[3] = true;
+	}
+	if (pScore > 13 * 12000 && !levelEnabled[4])
+	{
+		Target newTarget;
+		target->push_back(newTarget);
+		levelEnabled[4] = true;
+	}
+	if (pScore > 21 * 12000 && !levelEnabled[5])
+	{
+		Target newTarget;
+		target->push_back(newTarget);
+		levelEnabled[5] = true;
+	}
+	if (pScore > 30 * 12000 && !levelEnabled[6])
+	{
+		Target newTarget;
+		target->push_back(newTarget);
+		levelEnabled[6] = true;
 	}
 }
 
@@ -78,10 +98,10 @@ void Player::hit()
 {
 	pScore += HIT;
 	pHits++;
-	combo++;
-	if (combo > pMaxCombo)
+	pCombo++;
+	if (pCombo > pMaxCombo)
 	{
-		pMaxCombo = combo;
+		pMaxCombo = pCombo;
 	}
 	pTotalTargets++;
 }
@@ -90,7 +110,7 @@ void Player::miss()
 {
 	pScore -= MISS;
 	pMisses++;
-	combo = 0;
+	pCombo = 0;
 	pTotalTargets++;
 }
 
@@ -98,7 +118,7 @@ void Player::targetMiss()
 {
 	pScore -= TARGET_MISS;
 	pMissedTargets++;
-	combo = 0;
+	pCombo = 0;
 	pTotalTargets++;
 }
 

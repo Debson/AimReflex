@@ -28,7 +28,7 @@ Target::Target()
 
 Target::~Target()
 {
-	//delete this;
+	xIconTexture.free();
 }
 
 void Target::render(MDTexture *texture, SDL_Renderer &renderer)
@@ -46,7 +46,7 @@ void Target::render(MDTexture *texture, SDL_Renderer &renderer)
 		//call only once
 		targetMiss = true;
 	}
-	else if (scale > 0.015 && startTimer)
+	else if (scale > 0.012 && startTimer)
 	{
 		timer.start();
 		startTimer = false;
@@ -54,11 +54,11 @@ void Target::render(MDTexture *texture, SDL_Renderer &renderer)
 	// Step for scaling
 	if (reverse)
 	{
-		scale -= 0.00028f + scale * 0.001f;
+		scale -= 0.0002f + scale * 0.003f;
 	}
 	else
 	{
-		scale += 0.00028f + scale * 0.001f;
+		scale += 0.0002f + scale * 0.003f;
 	}
 	// Set offset to set tPosX and tPosY exactly in center of target
 	float diff = texture->getHeight() * scale * 0.5f;

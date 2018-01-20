@@ -1,8 +1,10 @@
-#include "UI.h"
+#include "../headers/UI.h"
 
 
 MDUI::MDUI()
 {
+	uiRenderer = NULL;
+	uiFont = NULL;
 	timerStarted = true;
 	startScreenRect = { 0, 0, GAME_WIDTH, GAME_HEIGHT };
 	textColor = { 102, 194, 255 };
@@ -14,10 +16,25 @@ MDUI::MDUI()
 	screenColor = { 0, 0, 0 };
 }
 
+MDUI::~MDUI()
+{
+	textTexture.free();
+	startScreenTitle.free();
+	startScreenInfo[0].free();
+	startScreenInfo[1].free();
+	startScreenInfo[2].free();
+	startScreenInfo[3].free();
+	startScreenInfoNum[0].free();
+	startScreenInfoNum[1].free();
+	startScreenInfoNum[2].free();
+	startScreenInfoNum[3].free();
+	buttonPlus.free();
+	buttonMinus.free();
+}
+
 bool MDUI::init(SDL_Renderer *renderer)
 {
 	uiRenderer = renderer;
-	uiFont = NULL;
 	if (uiFont != NULL)
 	{
 		textTexture.setFont(uiFont);
@@ -25,6 +42,15 @@ bool MDUI::init(SDL_Renderer *renderer)
 	if (uiRenderer != NULL)
 	{
 		textTexture.setRenderer(uiRenderer);
+		startScreenTitle.setRenderer(uiRenderer);
+		startScreenInfo[0].setRenderer(uiRenderer);
+		startScreenInfo[1].setRenderer(uiRenderer);
+		startScreenInfo[2].setRenderer(uiRenderer);
+		startScreenInfo[3].setRenderer(uiRenderer);
+		startScreenInfoNum[0].setRenderer(uiRenderer);
+		startScreenInfoNum[1].setRenderer(uiRenderer);
+		startScreenInfoNum[2].setRenderer(uiRenderer);
+		startScreenInfoNum[3].setRenderer(uiRenderer);
 		buttonPlus.setRenderer(uiRenderer);
 		buttonMinus.setRenderer(uiRenderer);
 
@@ -39,7 +65,6 @@ bool MDUI::init(SDL_Renderer *renderer)
 		}
 
 	}
-
 
 	return (uiFont && uiRenderer) != NULL;
 }
@@ -79,8 +104,29 @@ void MDUI::renderStartScreen(SDL_Color color)
 		SDL_RenderFillRect(uiRenderer, &startScreenRect);
 
 		textTexture.renderText("CLICK TO START", 25, textColor);
+		startScreenTitle.renderText("Aim Reflex", 68, textColor);
+		SDL_Color color = { 102, 102, 102 };
+		startScreenInfo[0].renderText("Hit:     pts", 16, color);
+		startScreenInfo[1].renderText("Miss:     pts", 16, color);
+		startScreenInfo[2].renderText("Left target:     pts", 16, color);
+		startScreenInfo[3].renderText("Press     to pause", 16, color);
+		color = { 255, 255, 255 };
+		startScreenInfoNum[0].renderText("+300", 16, color);
+		startScreenInfoNum[1].renderText("-100", 16, color);
+		startScreenInfoNum[2].renderText("-500", 16, color);
+		startScreenInfoNum[3].renderText("ESC", 16, color);
+
 
 		textTexture.render((GAME_WIDTH - textTexture.getWidth()) / 2, (GAME_HEIGHT - textTexture.getHeight()) / 2, 1);
+		startScreenTitle.render(15, 12, 1);
+		startScreenInfo[0].render(15, 70, 1);
+		startScreenInfo[1].render(15, 85, 1);
+		startScreenInfo[2].render(15, 100, 1);
+		startScreenInfo[3].render(15, 115, 1);
+		startScreenInfoNum[0].render(45, 70, 1);
+		startScreenInfoNum[1].render(51, 85, 1);
+		startScreenInfoNum[2].render(100, 100, 1);
+		startScreenInfoNum[3].render(57, 115, 1);
 	}
 }
 
@@ -165,9 +211,10 @@ bool MDUI::handleStartScreenInput(SDL_Event *e)
 	return inside;
 }
 
-bool MDUI::startCounter(int time)
+bool MDUI::startCounter(int time, SDL_Color color)
 {
 	// EDITABLE
+	screenColor = color;
 	SDL_SetRenderDrawColor(uiRenderer, screenColor.r, screenColor.g, screenColor.b, screenColor.a);
 	SDL_RenderFillRect(uiRenderer, &startScreenRect);
 
@@ -207,9 +254,3 @@ void MDUI::resetButtonState()
 {
 	buttonPressed = false;
 }
-
-/*
-Uint32 MDUI::callback(Uint32 interval, void *param)
-{
-	return ((MDUI*) param)->startCounter(param);
-}*/

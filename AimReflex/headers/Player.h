@@ -1,5 +1,5 @@
 #pragma once
-#include "../headers/Target.h"
+#include "Target.h"
 #include <vector>
 
 class Player 
@@ -26,7 +26,7 @@ public:
 	int getTotalTargets();
 
 	float totalTargetsTimeAiming;
-	int combo;
+	int pCombo;
 
 	bool pHit;
 	bool pMiss;
@@ -40,6 +40,7 @@ private:
 	int pMissedTargets;
 	int pMaxCombo;
 	int pTotalTargets;
+	int pCurrentLevel;
 	float pAiming;
 
 	bool levelEnabled[LEVEL_COUNT];

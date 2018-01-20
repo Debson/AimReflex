@@ -1,14 +1,9 @@
 #define _USE_MATH_DEFINES
 
 #include <iostream>
-#include "Circle.h"
+#include "../headers/Circle.h"
 
-Circle::Circle()
-{
-	mAlpha = 255;
-}
-
-void Circle::draw(SDL_Renderer *renderer, float centerX, float centerY, float radiusX, float *alpha)
+void Circle::draw(SDL_Renderer *renderer, float centerX, float centerY, float radiusX, float *alpha, SDL_Color color)
 {
 	mRenderer = renderer;
 	mRadius = radiusX;
@@ -28,8 +23,8 @@ void Circle::draw(SDL_Renderer *renderer, float centerX, float centerY, float ra
 
 		if ((x != xPos) || (y != yPos))
 		{
-			SDL_SetRenderDrawColor(renderer, 0, 255, 0, *alpha);
 			SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+			SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, *alpha);
 
 			SDL_RenderDrawLine(renderer, centerX + x, centerY - y, centerX + xPos, centerY - yPos);
 			SDL_RenderDrawLine(renderer, centerX - x, centerY - y, centerX - xPos, centerY - yPos);
@@ -50,4 +45,3 @@ void Circle::draw(SDL_Renderer *renderer, float centerX, float centerY, float ra
 		SDL_RenderDrawLine(renderer, centerX + x, centerY + y, centerX + xPos, centerY + yPos);
 	}
 }
-

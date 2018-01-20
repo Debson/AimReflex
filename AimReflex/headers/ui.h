@@ -1,11 +1,12 @@
 #pragma once
 
-#include "../AimReflex/headers/game_settings.h"
-#include "../AimReflex/headers/Target.h"
+#include "game_settings.h"
+#include "Target.h"
 class MDUI
 {
 public:
 	MDUI();
+	~MDUI();
 
 	void createButtonPlus(int x, int y, int h, int w);
 	void createButtonMinus( int x, int y, int h, int w);
@@ -16,11 +17,8 @@ public:
 
 	bool init(SDL_Renderer *renderer);
 	bool handleStartScreenInput(SDL_Event *e);
-	bool startCounter(int time);
+	bool startCounter(int time, SDL_Color color);
 	bool isPressed();
-
-	// Testing
-	static Uint32 callback(Uint32 interval, void* param);
 
 private:
 	SDL_Renderer *uiRenderer;
@@ -28,6 +26,9 @@ private:
 	MDTimer timer;
 
 	MDTexture textTexture;
+	MDTexture startScreenTitle;
+	MDTexture startScreenInfo[4];
+	MDTexture startScreenInfoNum[4];
 	MDTexture buttonPlus;
 	MDTexture buttonMinus;
 

@@ -3,8 +3,8 @@
 #include <vector>
 #include "MDTexture.h"
 #include "game_settings.h"
-#include "../headers/Circle.h"
-#include "../headers/Timer.h"
+#include "Circle.h"
+#include "Timer.h"
 
 class Target
 {
@@ -35,9 +35,9 @@ public:
 	bool targetMiss;
 
 private:
+	MDTimer timer;
 	Circle circle;
 
-	MDTimer timer;
 	MDTexture *tTargetTexture;
 	MDTexture xIconTexture;
 	SDL_Renderer *tRenderer;
