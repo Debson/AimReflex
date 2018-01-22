@@ -6,5 +6,5 @@ That's my first game made with SDL2.
 
 ![alt text](https://media.giphy.com/media/l49JBtVlbEOvFlwkw/giphy.gif)
 
-To install the game, download *Aim Reflex 1.0.msi* and complete instalation process.
+To install the game, download *Aim Reflex 1.0.msi* and complete installation process.
 
