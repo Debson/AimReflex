@@ -125,7 +125,7 @@ void initRenders()
 	bButtonMinus[0].init(dRenderer);
 	bButtonMinus[1].init(dRenderer);
 	bButtonMinus[2].init(dRenderer);
-	
+
 	// Target color adjuster
 	targetChangeColorText.setRenderer(dRenderer);
 	tRNumText.setRenderer(dRenderer);
@@ -152,7 +152,7 @@ bool init()
 	{
 		if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
 		{
-			// could not initialize linear texture 
+			// could not initialize linear texture
 			success = false;
 		}
 		else
@@ -344,9 +344,9 @@ void close()
 	SDL_Quit();
 }
 
-SDL_Color renderColorAdjuster(SDL_Color colorToChange, 
-							MDTexture *adjusterTitle, MDTexture *rNumText, MDTexture *gNumText,MDTexture *bNumText, 
-							MDUI *buttonPlus, MDUI *buttonMinus, 
+SDL_Color renderColorAdjuster(SDL_Color colorToChange,
+							MDTexture *adjusterTitle, MDTexture *rNumText, MDTexture *gNumText,MDTexture *bNumText,
+							MDUI *buttonPlus, MDUI *buttonMinus,
 							int offsetX, int offsetY)
 {
 	SDL_Color rgbTextColor = { 0, 0, 0 };
@@ -536,14 +536,14 @@ void renderLeftPanel()
 	dMaxComboText[1].render(GAME_WIDTH + 180 - dMaxComboText[1].getWidth(), 162, 1);
 	dTotalTargetsText[1].render(GAME_WIDTH + 180 - dTotalTargetsText[1].getWidth(), 187, 1);
 	dAimingText[1].render(GAME_WIDTH + 180 - dAimingText[1].getWidth(), 212, 1);
-	
+
 	// *********************************************************************************
 	//Render all numbers
 	std::stringstream newText;
 	newText << player.getScore();
 	dScoreText[1].loadFromRenderedText(newText.str().c_str(), textColor);
-	
-	
+
+
 	newText.str(std::string());
 	newText << player.getHits();
 	dHitsText[1].loadFromRenderedText(newText.str().c_str(), textColor);
@@ -599,11 +599,11 @@ void renderLeftPanel()
 	newText << player.getMissedTargets() * TARGET_MISS * -1;
 	dTotalMissedTargetsText.loadFromRenderedText(newText.str().c_str(), textColor);
 	// *********************************************************************************
-	
+
 	// Create and render background color adjuster
 	backgroundColor = renderColorAdjuster(backgroundColor, &backgroundChangeColorText, &bRNumText, &bGNumText,
 		&bBNumText, bButtonPlus, bButtonMinus, 0, -20);
-	
+
 	// Create and render background color adjuster
 	targetColor = renderColorAdjuster(targetColor, &targetChangeColorText, &tRNumText, &tGNumText,
 		&tBNumText, tButtonPlus, tButtonMinus, 0, 80);
@@ -634,6 +634,8 @@ int main(int argc, char* args[])
 			target.push_back(newTargets[0]);
 			target.push_back(newTargets[1]);
 
+            Timer fps;
+            int frame = 0;
 
 			bool quit = false;
 			bool quitStartScreen = false;
@@ -644,6 +646,9 @@ int main(int argc, char* args[])
 
 			while (!quit)
 			{
+			    // Start timer that regulates frames per seconds
+                fps.start();
+
 				while (SDL_PollEvent(&e) != 0)
 				{
 					if (e.type == SDL_QUIT)
@@ -731,6 +736,11 @@ int main(int argc, char* args[])
 							target[i].reset(target, i);
 						}
 					}
+					++frame;
+					if(fps.getTicks() < 1000 / FRAMES_PER_SECONDS)
+                    {
+                        SDL_Delay((1000 / FRAMES_PER_SECONDS) / fps.getTicks());
+                    }
 				}
 				else if (pause)
 				{// If ESC clicked, render pause screen

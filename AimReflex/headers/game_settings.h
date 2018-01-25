@@ -9,6 +9,9 @@ const int SCREEN_HEIGHT = 480;
 const int GAME_WIDTH = 640;
 const int GAME_HEIGHT = 480;
 
+// Frames per seconds
+const int FRAMES_PER_SECONDS = 60;
+
 // Background start color
 const SDL_Color BACKGROUND_COLOR = { 0, 0, 0, 255 };
 
