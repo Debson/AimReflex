@@ -54,11 +54,11 @@ void Target::render(MDTexture *texture, SDL_Renderer &renderer)
 	// Step for scaling
 	if (reverse)
 	{
-		scale -= 0.0002f + scale * 0.003f;
+		scale -= (0.03f + scale * 0.01f) / FRAMES_PER_SECOND;
 	}
 	else
 	{
-		scale += 0.0002f + scale * 0.003f;
+		scale += (0.03f + scale * 0.01f) / FRAMES_PER_SECOND;
 	}
 	// Set offset to set tPosX and tPosY exactly in center of target
 	float diff = texture->getHeight() * scale * 0.5f;
@@ -219,7 +219,7 @@ void Target::renderDeathX(MDTexture *texture)
 		SDL_SetTextureBlendMode(texture->getTexture(), SDL_BLENDMODE_BLEND);
 		SDL_SetTextureAlphaMod(texture->getTexture(), tXAlpha);
 		SDL_RenderCopy(tRenderer, texture->getTexture(), NULL, &xRect);
-		tXAlpha -= 2.f;
+		tXAlpha -= 85.f / FRAMES_PER_SECOND;
 	}
 
 	if (tXAlpha < 0.f)

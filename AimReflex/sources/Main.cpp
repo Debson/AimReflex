@@ -56,7 +56,188 @@ std::vector<Target> target;
 // Player class to control game logic
 Player player;
 
+// Declare functions
 bool checkHit(std::vector<Target> target);
+void initRenderers();
+bool init();
+bool loadMedia();
+void close();
+void renderLeftPanel();
+SDL_Color renderColorAdjuster(SDL_Color colorToChange,
+	MDTexture *adjusterTitle, MDTexture *rNumText, MDTexture *gNumText, MDTexture *bNumText,
+	MDUI *buttonPlus, MDUI *buttonMinus,
+	int offsetX, int offsetY);
+
+// Main function
+int main(int argc, char* args[])
+{
+	if (!init())
+	{
+		printf("Could not initialize!\n");
+	}
+	else
+	{
+		if (!loadMedia())
+		{
+			printf("Could not load media!\n");
+		}
+		else
+		{
+			SDL_Event e;
+			// Start with 2 targets
+			Target newTargets[START_TARGET_COUNT];
+			target.push_back(newTargets[0]);
+			target.push_back(newTargets[1]);
+
+            MDTimer fps;
+            int frame = 0;
+
+			bool quit = false;
+			bool quitStartScreen = false;
+			bool startCounter = false;
+			bool gameStarted = false;
+			bool pause = false;
+			bool keyAlreadyPressed = false;
+
+			while (!quit)
+			{
+			    // Start timer that regulates frames per seconds
+                fps.start();
+
+				while (SDL_PollEvent(&e) != 0)
+				{
+					if (e.type == SDL_QUIT)
+					{// If exit clicked, exit game
+						quit = true;
+					}
+					else if (e.type == SDL_MOUSEBUTTONDOWN && UIScreen.handleStartScreenInput(&e) && !startCounter)
+					{// If mouse button pressed on starting screen, start counter, !startCounter used to enter do not enter if after counter started
+						startCounter = true;
+					}
+
+					if (e.key.keysym.sym == SDLK_ESCAPE && e.type == SDL_KEYDOWN && gameStarted && !keyAlreadyPressed)
+					{//Pause game, key can be pressed only once
+						if (pause)
+						{
+							pause = false;
+						}
+						else
+						{
+							pause = true;
+						}
+						keyAlreadyPressed = true;
+					}
+					else if (e.key.keysym.sym == SDLK_ESCAPE && e.type == SDL_KEYUP && gameStarted)
+					{// If ESC is up, set keyAlreadyPressed to get ESC input event only once
+						keyAlreadyPressed = false;
+					}
+
+					for (int i = 0; i < 3; ++i)
+					{// Check if any of button was pressed, if pressed go out of for loop
+						bButtonPlus[i].handleInput(&e);
+						bButtonMinus[i].handleInput(&e);
+						tButtonPlus[i].handleInput(&e);
+						tButtonMinus[i].handleInput(&e);
+						if (bButtonPlus[i].isPressed() || bButtonMinus[i].isPressed() ||
+							tButtonPlus[i].isPressed() || tButtonMinus[i].isPressed())
+						{
+							break;
+						}
+					}
+
+					if (quitStartScreen && !pause)
+					{// If start counting is finished, start checking events and other properties of target
+						/// If hit, dont call checkHit function in next for loop iteration
+						bool targetWasHit = true;
+						for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
+						{
+							target[i].handleInput(&e);
+							if (target[i].tHit && targetWasHit)
+							{
+								if (checkHit(target))
+								{
+									player.checkTargetLifeTime(target);
+									target[i].reset(target, i);
+									targetWasHit = false;
+								}
+							}
+						}
+						if (e.type == SDL_MOUSEBUTTONDOWN && targetWasHit)
+						{// Methods that can be called only once and when mouse button pressed
+							checkHit(target);
+							player.checkScore(&target);
+						}
+					}
+				} //end Poll event while
+
+				if (quitStartScreen && !pause)
+				{// If start counting is finished, start rendering actuall game, if paused, stop rendering
+					gameStarted = true;
+					SDL_SetRenderDrawColor(dRenderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.r);
+					SDL_RenderClear(dRenderer);
+
+					for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
+					{
+						/// Render targets to the screen
+						target[i].setTargetBordersColor(targetColor);
+						target[i].render(&dTargetTexture, *dRenderer);
+						target[i].renderDeathX(&dXTexture);
+						/// Unpause targets timers
+						target[i].unpauseTargetTimer();
+						/// Check if target expired
+						if (target[i].targetMiss)
+						{
+							player.targetMiss();
+							target[i].reset(target, i);
+						}
+					}
+					++frame;
+					if(fps.getTicks() < 1000 / FRAMES_PER_SECOND)
+                    {
+                        SDL_Delay((1000 / FRAMES_PER_SECOND) - fps.getTicks());
+                    }
+				}
+				else if (pause)
+				{// If ESC clicked, render pause screen
+					UIScreen.renderPauseScreen(backgroundColor);
+					for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
+					{// Pause all timers to prevent from counting target's life time while paused
+						target[i].pauseTargetTimer();
+					}
+				}
+				else
+				{
+					if (startCounter)
+					{// Start start screen counter
+						if (UIScreen.startCounter(3000, backgroundColor))
+						{// startCounter() will return true after 3000ms
+							quitStartScreen = true;
+						}
+					}
+					else
+					{// Redner start screen
+						UIScreen.renderStartScreen(backgroundColor);
+					}
+				}
+				/// Render left panel with scores
+				renderLeftPanel();
+				for (int i = 0; i < 3; ++i)
+				{// Reset buttons state on end of a frame(TODO do it more efficent?)
+					bButtonPlus[i].resetButtonState();
+					bButtonMinus[i].resetButtonState();
+					tButtonPlus[i].resetButtonState();
+					tButtonMinus[i].resetButtonState();
+				}
+
+				SDL_RenderPresent(dRenderer);
+			}
+		}
+	}
+	// Free memory
+	close();
+
+	return 0;
+}
 
 bool checkHit(std::vector<Target> target)
 {
@@ -86,7 +267,7 @@ bool checkHit(std::vector<Target> target)
 	return hit > 0;
 }
 
-void initRenders()
+void initRenderers()
 {
 	// Set renderer to every texture
 	// TODO Is it possible to do it more efficent?
@@ -166,7 +347,7 @@ bool init()
 			}
 			else
 			{
-				dRenderer = SDL_CreateRenderer(dWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+				dRenderer = SDL_CreateRenderer(dWindow, -1, SDL_RENDERER_ACCELERATED);
 				if (dRenderer == NULL)
 				{
 					// could not create a renderer
@@ -176,7 +357,7 @@ bool init()
 				{
 
 					SDL_SetRenderDrawColor(dRenderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.r);
-					initRenders();
+					initRenderers();
 
 					int imgFlags = IMG_INIT_PNG;
 					if (!(IMG_Init(imgFlags) & imgFlags))
@@ -497,19 +678,19 @@ void renderLeftPanel()
 	SDL_RenderDrawLine(dRenderer, GAME_WIDTH + 10, 135 + dHitsText[0].getHeight(), GAME_WIDTH + 180, 135 + dHitsText[0].getHeight());
 
 	// Max combo (how many targets were hit in a row)
-	dMaxComboText[0].render(GAME_WIDTH + 10, 165, 1);
+	dMaxComboText[0].render(GAME_WIDTH + 10, 160, 1);
 	SDL_SetRenderDrawColor(dRenderer, underlineColor.r, underlineColor.g, underlineColor.b, 255);
-	SDL_RenderDrawLine(dRenderer, GAME_WIDTH + 10, 165 + dHitsText[0].getHeight(), GAME_WIDTH + 180, 165 + dHitsText[0].getHeight());
+	SDL_RenderDrawLine(dRenderer, GAME_WIDTH + 10, 160 + dHitsText[0].getHeight(), GAME_WIDTH + 180, 160 + dHitsText[0].getHeight());
 
 	// Total targets that appeared on game window
-	dTotalTargetsText[0].render(GAME_WIDTH + 10, 190, 1);
+	dTotalTargetsText[0].render(GAME_WIDTH + 10, 185, 1);
 	SDL_SetRenderDrawColor(dRenderer, underlineColor.r, underlineColor.g, underlineColor.b, 255);
-	SDL_RenderDrawLine(dRenderer, GAME_WIDTH + 10, 190 + dHitsText[0].getHeight(), GAME_WIDTH + 180, 190 + dHitsText[0].getHeight());
+	SDL_RenderDrawLine(dRenderer, GAME_WIDTH + 10, 185 + dHitsText[0].getHeight(), GAME_WIDTH + 180, 185 + dHitsText[0].getHeight());
 
 	// Aiming
-	dAimingText[0].render(GAME_WIDTH + 10, 215, 1);
+	dAimingText[0].render(GAME_WIDTH + 10, 210, 1);
 	SDL_SetRenderDrawColor(dRenderer, underlineColor.r, underlineColor.g, underlineColor.b, 255);
-	SDL_RenderDrawLine(dRenderer, GAME_WIDTH + 10, 215 + dHitsText[0].getHeight(), GAME_WIDTH + 180, 215 + dHitsText[0].getHeight());
+	SDL_RenderDrawLine(dRenderer, GAME_WIDTH + 10, 210 + dHitsText[0].getHeight(), GAME_WIDTH + 180, 210 + dHitsText[0].getHeight());
 
 	// Calculated points close to left bound
 
@@ -533,9 +714,9 @@ void renderLeftPanel()
 	dHitsText[1].render(GAME_WIDTH + 180 - dHitsText[1].getWidth(), 82, 1);
 	dMissesText[1].render(GAME_WIDTH + 180 - dMissesText[1].getWidth(), 107, 1);
 	dMissedTargetsText[1].render(GAME_WIDTH + 180 - dMissedTargetsText[1].getWidth() , 132, 1);
-	dMaxComboText[1].render(GAME_WIDTH + 180 - dMaxComboText[1].getWidth(), 162, 1);
-	dTotalTargetsText[1].render(GAME_WIDTH + 180 - dTotalTargetsText[1].getWidth(), 187, 1);
-	dAimingText[1].render(GAME_WIDTH + 180 - dAimingText[1].getWidth(), 212, 1);
+	dMaxComboText[1].render(GAME_WIDTH + 180 - dMaxComboText[1].getWidth(), 157, 1);
+	dTotalTargetsText[1].render(GAME_WIDTH + 180 - dTotalTargetsText[1].getWidth(), 182, 1);
+	dAimingText[1].render(GAME_WIDTH + 180 - dAimingText[1].getWidth(), 207, 1);
 
 	// *********************************************************************************
 	//Render all numbers
@@ -612,174 +793,4 @@ void renderLeftPanel()
 	SDL_SetTextureBlendMode(dTargetTexture.getTexture(), SDL_BLENDMODE_BLEND);
 	SDL_SetTextureColorMod(dTargetTexture.getTexture(), targetColor.r, targetColor.g, targetColor.b);
 
-}
-
-int main(int argc, char* args[])
-{
-	if (!init())
-	{
-		printf("Could not initialize!\n");
-	}
-	else
-	{
-		if (!loadMedia())
-		{
-			printf("Could not load media!\n");
-		}
-		else
-		{
-			SDL_Event e;
-			// Start with 2 targets
-			Target newTargets[START_TARGET_COUNT];
-			target.push_back(newTargets[0]);
-			target.push_back(newTargets[1]);
-
-            Timer fps;
-            int frame = 0;
-
-			bool quit = false;
-			bool quitStartScreen = false;
-			bool startCounter = false;
-			bool gameStarted = false;
-			bool pause = false;
-			bool keyAlreadyPressed = false;
-
-			while (!quit)
-			{
-			    // Start timer that regulates frames per seconds
-                fps.start();
-
-				while (SDL_PollEvent(&e) != 0)
-				{
-					if (e.type == SDL_QUIT)
-					{// If exit clicked, exit game
-						quit = true;
-					}
-					else if (e.type == SDL_MOUSEBUTTONDOWN && UIScreen.handleStartScreenInput(&e) && !startCounter)
-					{// If mouse button pressed on starting screen, start counter, !startCounter used to enter do not enter if after counter started
-						startCounter = true;
-					}
-
-					if (e.key.keysym.sym == SDLK_ESCAPE && e.type == SDL_KEYDOWN && gameStarted && !keyAlreadyPressed)
-					{//Pause game, key can be pressed only once
-						if (pause)
-						{
-							pause = false;
-						}
-						else
-						{
-							pause = true;
-						}
-						keyAlreadyPressed = true;
-					}
-					else if (e.key.keysym.sym == SDLK_ESCAPE && e.type == SDL_KEYUP && gameStarted)
-					{// If ESC is up, set keyAlreadyPressed to get ESC input event only once
-						keyAlreadyPressed = false;
-					}
-
-					for (int i = 0; i < 3; ++i)
-					{// Check if any of button was pressed, if pressed go out of for loop
-						bButtonPlus[i].handleInput(&e);
-						bButtonMinus[i].handleInput(&e);
-						tButtonPlus[i].handleInput(&e);
-						tButtonMinus[i].handleInput(&e);
-						if (bButtonPlus[i].isPressed() || bButtonMinus[i].isPressed() ||
-							tButtonPlus[i].isPressed() || tButtonMinus[i].isPressed())
-						{
-							break;
-						}
-					}
-
-					if (quitStartScreen && !pause)
-					{// If start counting is finished, start checking events and other properties of target
-						/// If hit, dont call checkHit function in next for loop iteration
-						bool targetWasHit = true;
-						for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
-						{
-							target[i].handleInput(&e);
-							if (target[i].tHit && targetWasHit)
-							{
-								if (checkHit(target))
-								{
-									player.checkTargetLifeTime(target);
-									target[i].reset(target, i);
-									targetWasHit = false;
-								}
-							}
-						}
-						if (e.type == SDL_MOUSEBUTTONDOWN && targetWasHit)
-						{// Methods that can be called only once and when mouse button pressed
-							checkHit(target);
-							player.checkScore(&target);
-						}
-					}
-				} //end Poll event while
-
-				if (quitStartScreen && !pause)
-				{// If start counting is finished, start rendering actuall game, if paused, stop rendering
-					gameStarted = true;
-					SDL_SetRenderDrawColor(dRenderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.r);
-					SDL_RenderClear(dRenderer);
-
-					for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
-					{
-						/// Render targets to the screen
-						target[i].setTargetBordersColor(targetColor);
-						target[i].render(&dTargetTexture, *dRenderer);
-						target[i].renderDeathX(&dXTexture);
-						/// Unpause targets timers
-						target[i].unpauseTargetTimer();
-						/// Check if target expired
-						if (target[i].targetMiss)
-						{
-							player.targetMiss();
-							target[i].reset(target, i);
-						}
-					}
-					++frame;
-					if(fps.getTicks() < 1000 / FRAMES_PER_SECONDS)
-                    {
-                        SDL_Delay((1000 / FRAMES_PER_SECONDS) / fps.getTicks());
-                    }
-				}
-				else if (pause)
-				{// If ESC clicked, render pause screen
-					UIScreen.renderPauseScreen(backgroundColor);
-					for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
-					{// Pause all timers to prevent from counting target's life time while paused
-						target[i].pauseTargetTimer();
-					}
-				}
-				else
-				{
-					if (startCounter)
-					{// Start start screen counter
-						if (UIScreen.startCounter(3000, backgroundColor))
-						{// startCounter() will return true after 3000ms
-							quitStartScreen = true;
-						}
-					}
-					else
-					{// Redner start screen
-						UIScreen.renderStartScreen(backgroundColor);
-					}
-				}
-				/// Render left panel with scores
-				renderLeftPanel();
-				for (int i = 0; i < 3; ++i)
-				{// Reset buttons state on end of a frame(TODO do it more efficent?)
-					bButtonPlus[i].resetButtonState();
-					bButtonMinus[i].resetButtonState();
-					tButtonPlus[i].resetButtonState();
-					tButtonMinus[i].resetButtonState();
-				}
-
-				SDL_RenderPresent(dRenderer);
-			}
-		}
-	}
-	// Free memory
-	close();
-
-	return 0;
 }

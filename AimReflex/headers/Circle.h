@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL.h>
+#include "game_settings.h"
 
 class Circle
 {

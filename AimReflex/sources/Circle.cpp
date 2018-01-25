@@ -31,7 +31,7 @@ void Circle::draw(SDL_Renderer *renderer, float centerX, float centerY, float ra
 			SDL_RenderDrawLine(renderer, centerX - x, centerY + y, centerX - xPos, centerY + yPos);
 			SDL_RenderDrawLine(renderer, centerX + x, centerY + y, centerX + xPos, centerY + yPos);
 			//TODO use easing function
-			*alpha -= 0.05f;
+			*alpha -= 5.f / FRAMES_PER_SECOND;
 		}
 		x = xPos;
 		y = yPos;
