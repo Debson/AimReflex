@@ -89,8 +89,9 @@ int main(int argc, char* args[])
 			target.push_back(newTargets[0]);
 			target.push_back(newTargets[1]);
 
-            MDTimer fps;
-            int frame = 0;
+			MDTimer timer;
+			float lastFrame = 0.f;
+			float deltaTime = 0.f;
 
 			bool quit = false;
 			bool quitStartScreen = false;
@@ -101,9 +102,6 @@ int main(int argc, char* args[])
 
 			while (!quit)
 			{
-			    // Start timer that regulates frames per seconds
-                fps.start();
-
 				while (SDL_PollEvent(&e) != 0)
 				{
 					if (e.type == SDL_QUIT)
@@ -147,6 +145,7 @@ int main(int argc, char* args[])
 
 					if (quitStartScreen && !pause)
 					{// If start counting is finished, start checking events and other properties of target
+
 						/// If hit, dont call checkHit function in next for loop iteration
 						bool targetWasHit = true;
 						for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
@@ -172,6 +171,11 @@ int main(int argc, char* args[])
 
 				if (quitStartScreen && !pause)
 				{// If start counting is finished, start rendering actuall game, if paused, stop rendering
+					timer.unpause(); // Unpause timer when in render loop
+					float currentFrame = timer.getTicks();
+					deltaTime = currentFrame - lastFrame;
+					lastFrame = currentFrame;
+
 					gameStarted = true;
 					SDL_SetRenderDrawColor(dRenderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.r);
 					SDL_RenderClear(dRenderer);
@@ -180,8 +184,8 @@ int main(int argc, char* args[])
 					{
 						/// Render targets to the screen
 						target[i].setTargetBordersColor(targetColor);
-						target[i].render(&dTargetTexture, *dRenderer);
-						target[i].renderDeathX(&dXTexture);
+						target[i].render(&dTargetTexture, *dRenderer, deltaTime);
+						target[i].renderDeathX(&dXTexture, deltaTime);
 						/// Unpause targets timers
 						target[i].unpauseTargetTimer();
 						/// Check if target expired
@@ -191,14 +195,10 @@ int main(int argc, char* args[])
 							target[i].reset(target, i);
 						}
 					}
-					++frame;
-					if(fps.getTicks() < 1000 / FRAMES_PER_SECOND)
-                    {
-                        SDL_Delay((1000 / FRAMES_PER_SECOND) - fps.getTicks());
-                    }
 				}
 				else if (pause)
 				{// If ESC clicked, render pause screen
+					timer.pause(); // Pause timer when paused
 					UIScreen.renderPauseScreen(backgroundColor);
 					for (std::vector<Target>::size_type i = 0; i != target.size(); ++i)
 					{// Pause all timers to prevent from counting target's life time while paused
@@ -212,6 +212,7 @@ int main(int argc, char* args[])
 						if (UIScreen.startCounter(3000, backgroundColor))
 						{// startCounter() will return true after 3000ms
 							quitStartScreen = true;
+							timer.start();
 						}
 					}
 					else

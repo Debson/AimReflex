@@ -13,9 +13,9 @@ public:
 
 	~Target();
 
-	void render(MDTexture *texture, SDL_Renderer &renderer);
+	void render(MDTexture *texture, SDL_Renderer &renderer, float deltaTime);
 	void handleInput(SDL_Event *e);
-	void renderDeathX(MDTexture *texture);
+	void renderDeathX(MDTexture *texture, float deltaTime);
 	void reset(std::vector<Target> &target, int numOfTargetHit);
 	void onTargetDeath();
 	void setTargetBordersColor(SDL_Color);

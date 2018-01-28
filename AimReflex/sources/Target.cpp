@@ -31,7 +31,7 @@ Target::~Target()
 	xIconTexture.free();
 }
 
-void Target::render(MDTexture *texture, SDL_Renderer &renderer)
+void Target::render(MDTexture *texture, SDL_Renderer &renderer, float deltaTime)
 {
 	tRenderer = &renderer;
 	tTargetTexture = texture;
@@ -54,11 +54,11 @@ void Target::render(MDTexture *texture, SDL_Renderer &renderer)
 	// Step for scaling
 	if (reverse)
 	{
-		scale -= (0.03f + scale * 0.01f) / FRAMES_PER_SECOND;
+		scale -= (0.00003f + scale * 0.00001f) * deltaTime;;
 	}
 	else
 	{
-		scale += (0.03f + scale * 0.01f) / FRAMES_PER_SECOND;
+		scale += (0.00003f + scale * 0.00001f) * deltaTime;
 	}
 	// Set offset to set tPosX and tPosY exactly in center of target
 	float diff = texture->getHeight() * scale * 0.5f;
@@ -72,7 +72,7 @@ void Target::render(MDTexture *texture, SDL_Renderer &renderer)
 
 	if (startCircleBlend)
 	{
-		circle.draw(tRenderer, oldPosX, oldPosY, oldWidth / 2, &tCircleAlpha, bordersColor);
+		circle.draw(tRenderer, oldPosX, oldPosY, oldWidth / 2, &tCircleAlpha, bordersColor, deltaTime);
 
 		if (tCircleAlpha < 10.f)
 		{
@@ -208,7 +208,7 @@ void Target::setTargetBordersColor(SDL_Color color)
 	bordersColor = color;
 }
 
-void Target::renderDeathX(MDTexture *texture)
+void Target::renderDeathX(MDTexture *texture, float deltaTime)
 {
 	if (startXBlend)
 	{
@@ -219,7 +219,7 @@ void Target::renderDeathX(MDTexture *texture)
 		SDL_SetTextureBlendMode(texture->getTexture(), SDL_BLENDMODE_BLEND);
 		SDL_SetTextureAlphaMod(texture->getTexture(), tXAlpha);
 		SDL_RenderCopy(tRenderer, texture->getTexture(), NULL, &xRect);
-		tXAlpha -= 85.f / FRAMES_PER_SECOND;
+		tXAlpha -= 0.1f * deltaTime;
 	}
 
 	if (tXAlpha < 0.f)

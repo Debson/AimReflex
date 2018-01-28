@@ -3,7 +3,7 @@
 #include <iostream>
 #include "../headers/Circle.h"
 
-void Circle::draw(SDL_Renderer *renderer, float centerX, float centerY, float radiusX, float *alpha, SDL_Color color)
+void Circle::draw(SDL_Renderer *renderer, float centerX, float centerY, float radiusX, float *alpha, SDL_Color color, float deltaTime)
 {
 	mRenderer = renderer;
 	mRadius = radiusX;
@@ -31,7 +31,7 @@ void Circle::draw(SDL_Renderer *renderer, float centerX, float centerY, float ra
 			SDL_RenderDrawLine(renderer, centerX - x, centerY + y, centerX - xPos, centerY + yPos);
 			SDL_RenderDrawLine(renderer, centerX + x, centerY + y, centerX + xPos, centerY + yPos);
 			//TODO use easing function
-			*alpha -= 5.f / FRAMES_PER_SECOND;
+			*alpha -= 0.005f * deltaTime;
 		}
 		x = xPos;
 		y = yPos;
