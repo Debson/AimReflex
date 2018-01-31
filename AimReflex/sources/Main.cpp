@@ -1,8 +1,7 @@
 #include <cmath>
 #include <sstream>
 #include <iomanip>
-
-#include <SDL_image.h>
+#include "SDL_image.h"
 
 #include "../headers/Timer.h"
 #include "../headers/Player.h"
